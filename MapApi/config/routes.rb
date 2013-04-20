@@ -1,7 +1,12 @@
 MapApi::Application.routes.draw do
   post "/hotCircle/" => "hot_circle#create"
+  delete "/hotCircle/:name" => "hot_circle#delete"
   get "/hotCircle/:name" => "hot_circle#get"
   get "/hotCircle/all"  => "hot_circle#all"
+
+  post "/district/new" => "district#create"
+  delete "/district/:name" => "district#delete"
+  get "/district/all" => "district#all"
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

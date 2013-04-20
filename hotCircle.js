@@ -5,6 +5,16 @@
 
     HotCircle = {
         init: function (){
+            District.getDistrict('all', function (results){
+                if (results){
+                    for (var i = 0, l = results.length; i < l; i ++){
+                        var name = results[i].district.name;
+                        $("<option value='" + name +"'>" + name + "</option>").appendTo($('#circle_district'));
+                    }
+                }
+                
+            });
+
             this.bindEvent();             
         },
 
@@ -12,14 +22,14 @@
             var name = name || 'all';
             $.get(_baseURL + name, function (result){
                 if(callback) 
-                    callback();
+                    callback(result);
             });
         },
 
         setCircle: function (data, callback){
             $.post(_baseURL, data, function (result){
                 if (callback)
-                    callback();
+                    callback(result);
             });
         },
 
@@ -60,6 +70,7 @@
 
                 if (!name || !district || !points){
                    alert('invalid post params');
+		   return;
                 }
 
                 var data = {
@@ -69,10 +80,7 @@
                     strokeStyle: '' 
                 }
 
-
                 HotCircle.setCircle(data, function (results){
-                    var results = JSON.parse(results);
-
                     if (results.status)
                         alert("insert success");
                     else

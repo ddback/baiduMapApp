@@ -1,8 +1,43 @@
-body, html {
+body, html, ul, li{
     padding: 0;
     margin: 0;
     height: 100%;
     width: 100%;
+}
+
+li {list-style: none;}
+
+#toolMenu {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 600px;
+    height: 40px;
+    background: #2a55ff;
+    color: #fff;
+    font-weight: bold;
+    margin-left: -300px;
+    border-radius: 0 0 8px 8px;
+    opactiy: 0.6;
+    padding: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+#toolMenu li {
+    float: left;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 3px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+#toolMenu li:hover {
+    background: #fff;
+    color: #2a55ff;
 }
 
 #container {
@@ -10,7 +45,20 @@ body, html {
     width: 100%;
 }
 
+#district {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #fff;
+    width: 400px;
+    height: 200px;
+    border-radius: 10px 0 0 0;
+    border: 10px solid rgba(182, 210, 236, 0.6);
+}
+
 #hotCircle {
+    display: none;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -21,21 +69,34 @@ body, html {
     border: 10px solid rgba(182, 210, 236, 0.6);
 }
 
-#hotCircle .circle-item {
+#district .item, #hotCircle .item {
     width: 100%;
     padding: 5px;
 }
 
-#hotCircle .circle-item label {
+#district .item label, #hotCircle .item label {
     display: inline-block;
     width: 80px;
     font-size: 12px;
 }
 
-#hotCircle .circle-item input {
+#district .item input, #hotCircle .item input {
     width: 200px;
     height: 25px;
     border: 1px solid #ccc;
 }
 
 #hotCircle .recroding {background: #2A55FF}
+
+.hideHandler {
+    position: absolute;
+    height: 28px;
+    line-height: 28px;
+    width: 50px;
+    border-radius: 3px 3px 0 0;
+    top: -30px;
+    right: -8px;
+    font-size: 12px;
+    text-align: center;
+    background: #d3e4f3;
+}

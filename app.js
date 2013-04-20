@@ -25,6 +25,14 @@
          mapdbClick(e);
      });
 
+     //tool menu event
+     $("#tool_add_circle").click(function (){
+         $("#hotCircle").toggle(300);
+     });
+
+     $("#tool_add_district").click(function (){
+         $("#district").toggle(300);
+     });
 
      function mapClick (e){
          var x = e.point.lng,

@@ -9,15 +9,33 @@
 </head>
 <body>
     <div id="container"></div>
+    <div id="toolMenu">
+        <ul>
+        	<li id="tool_add_circle">新增商圈</li>
+        	<li id="tool_get_circle">查看商圈</li>
+        	<li id="tool_add_district">添加行政区</li>
+            <li id="tool_route_nav">路线导航</li>
+            <li id="tool_order">一键分单</li>
+            <li id="tool_track">轨迹跟踪</li>
+        </ul>
+    </div>
+    <div id="district">
+        <div class="item"><label>名称:</label><input id="district_name" type="text" /></div>
+        <div class="item"><label>面积:</label><input id="district_area" type="text" /></div>
+        <div class="item"><button id="district_add">添加区域</button></div>
+        <div class="hideHandler"><a href="">隐藏</a></div>
+    </div>
     <div id="hotCircle">
-        <div class="circle-item"><label>名称:</label><input id="circle_name" type="text" /></div>
-        <div class="circle-item"><label>商圈所属:</label><input id="circle_district" type="text" /></div>
-        <div class="circle-item"><label>范围坐标:</label><input id="circle_points" type="text" /><button id="circle_add_point">录制路径</button></div>
-        <div class="circle-item"><button id="circle_add">添加商圈</button></div>
+        <div class="item"><label>名称:</label><input id="circle_name" type="text" /></div>
+        <div class="item"><label>商圈所属:</label><select id="circle_district" type="text"></select></div>
+        <div class="item"><label>范围坐标:</label><input id="circle_points" type="text" /><button id="circle_add_point">录制路径</button></div>
+        <div class="item"><button id="circle_add">添加商圈</button></div>
+        <div class="hideHandler"><a  href="">隐藏</a></div>
     </div>
     <div id="routeNavigation"></div>
     <div id="routeTrace"></div>
 </body>
 <script type="text/javascript" src="app.js"></script>
+<script type="text/javascript" src="district.js"></script>
 <script type="text/javascript" src="hotCircle.js"></script>
 </html>
