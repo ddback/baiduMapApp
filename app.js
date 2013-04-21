@@ -2,44 +2,66 @@
 
      var App = {};
 
+     App.city = "太原";
      App.map = new BMap.Map('container');
-
-     App.map.centerAndZoom("太原", 15);
+     App.map.centerAndZoom(App.city, 15);
      App.map.addControl(new BMap.NavigationControl());  //添加默认缩放平移控件
      App.map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_SMALL}));  //右上角，仅包含平移和缩放按钮
      //App.map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_BOTTOM_LEFT, type: BMAP_NAVIGATION_CONTROL_PAN}));  //左下角，仅包含平移按钮
      //App.map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_BOTTOM_RIGHT, type: BMAP_NAVIGATION_CONTROL_ZOOM}));  //右下角，仅包含缩放按钮
      App.map.enableScrollWheelZoom(); //启用滚轮放大缩小, 默认禁用
      //App.map.enableContinuousZoom(); //启用地图惯性拖拽，默认禁用   
+     
+     App.helper = {
+         addMarker: function (options){
+             if (!options.point)
+                 return;
 
+             var marker = new BMap.Marker(options.point),
+                 infoWin;
 
-     App.map.addEventListener('click', function (e){
-         mapClick(e);
-     });
+             if (options.infoHtml)
+                infoWin = new BMap.InfoWindow(options.infoHtml)
+             
+             if (options.label){
+                var label = new BMap.Label(options.label.content),
+                    offsetSize = new BMap.Size(options.label.offsetX, options.label.offsetY);
 
-     App.map.addEventListener('mousemove', function (e){
-         mapMouseMove(e);
-     });
+                label.setOffset(offsetSize);
+                label.setStyle(options.label.style);
+                marker.setLabel(label);
+             }
 
-     App.map.addEventListener('dblclick', function (e){
-         mapdbClick(e);
-     });
+             marker.addEventListener('click', function (){
+                if (infoWin)
+                    marker.openInfoWindow(infoWin);
 
-     //tool menu event
-     $("#tool_add_circle").click(function (){
-         $("#hotCircle").toggle(300);
-     });
+                if (options.callback)
+                    options.callback();
+             });
 
-     $("#tool_add_district").click(function (){
-         $("#district").toggle(300);
-     });
+             App.map.addOverlay(marker);
+
+         }
+     }
+
+     function instancePointsArr (points){
+         var instancePoints = [];
+
+         for (var i = 0, l = points.length; i < l; i ++){
+            instancePoints.push(new BMap.Point(points[i].x, points[i].y));
+         }
+
+         return instancePoints;
+     }
+
 
      function mapClick (e){
          var x = e.point.lng,
              y = e.point.lat,
-             isRecroding = HotCircle.getRecrodingFlag();
+             isRecording = HotCircle.getRecordingFlag();
 
-         if (isRecroding){
+         if (isRecording){
             var circlePoints = HotCircle.getPoints();
 
             if (circlePoints.length){
@@ -57,9 +79,9 @@
      function mapMouseMove (e){
          var x = e.point.lng,
              y = e.point.lat,
-             isRecroding = HotCircle.getRecrodingFlag();
+             isRecording = HotCircle.getRecordingFlag();
 
-         if (isRecroding && HotCircle.polyline){
+         if (isRecording && HotCircle.polyline){
              var tempPoints = HotCircle.getPoints().concat([{'x': x, 'y': y}]);
              HotCircle.polyline.setPath(instancePointsArr(tempPoints));
          }
@@ -68,9 +90,9 @@
      function mapdbClick (e){
          var x = e.point.lng,
              y = e.point.lat,
-             isRecroding = HotCircle.getRecrodingFlag();
+             isRecording = HotCircle.getRecordingFlag();
 
-         if (isRecroding){
+         if (isRecording){
              HotCircle.addPoints({'x': x, 'y': y});
              HotCircle.getPoints().push({x: x, y: y});
              var polygon = getPolygon(HotCircle.getPoints());
@@ -82,23 +104,75 @@
      
      }
 
-     function instancePointsArr(points){
-         var instancePoints = [];
-
-         for (var i = 0, l = points.length; i < l; i ++){
-            instancePoints.push(new BMap.Point(points[i].x, points[i].y));
-         }
-
-         return instancePoints;
-     }
+     
 
      function getPolyline (points){
          return new BMap.Polyline(instancePointsArr(points), {strokeColor: "red", strokeWeight: 6, strokeOpacity: 0.5});
+     }
+
+     function hideAllFeaturePanel (){
+        $('.featurePanel').hide();
      }
 
      function getPolygon (points){
          return new BMap.Polygon(instancePointsArr(points), {strokeColor: "red", strokeWeight: 6, strokeOpacity: 0.5});
      }
 
+     App.bindEvent = function (){
+         App.map.addEventListener('click', function (e){
+             mapClick(e);
+         });
+
+         App.map.addEventListener('mousemove', function (e){
+             mapMouseMove(e);
+         });
+
+         App.map.addEventListener('dblclick', function (e){
+             mapdbClick(e);
+         });
+
+         //tool menu event
+         $("#tool_add_circle").click(function (){
+             hideAllFeaturePanel();
+             $("#hotCircle").show();
+         });
+
+         $("#tool_add_district").click(function (){
+             hideAllFeaturePanel();
+             $("#district").show();
+         });
+
+         $("#tool_route_nav").click(function (){
+             hideAllFeaturePanel();
+             $("#routeNavigation").show();
+         });
+
+         $("#tool_add_district").click(function (){
+                //getBoundary();    
+         });
+
+         $(".hideHandler").each(function (index, item){
+             $(item).click((function(o){
+                 return function (){
+                    $(o).parent().hide();
+                 }
+             })(item));
+         });
+     }
+
+     function getBoundary(){       
+         var bdary = new BMap.Boundary();
+         bdary.get(App.city, function(rs){       //获取行政区域
+             App.map.clearOverlays();        //清除地图覆盖物       
+             var count = rs.boundaries.length; //行政区域的点有多少个
+             for(var i = 0; i < count; i++){
+                 var ply = new BMap.Polygon(rs.boundaries[i], {strokeWeight: 2, strokeColor: "#ff0000"}); //建立多边形覆盖物
+                 App.map.addOverlay(ply);  //添加覆盖物
+                 App.map.setViewport(ply.getPath());    //调整视野         
+             }                
+         });   
+     }
+     
+     App.bindEvent();
      window.App = App;
 })();

@@ -2,7 +2,7 @@
 
     var _baseURL = "/district/";
 
-    District = {
+    var District = {
         init: function (){
             this.bindEvent();             
         },
@@ -50,5 +50,7 @@
     }
 
     District.init();
+
+    window.District = District;
 
 })();

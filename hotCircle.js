@@ -3,7 +3,7 @@
     var _baseURL = "/hotCircle/",
         _points = [];
 
-    HotCircle = {
+    var HotCircle = {
         init: function (){
             District.getDistrict('all', function (results){
                 if (results){
@@ -37,7 +37,7 @@
             this.recrodingFlag = flag;                
         },
 
-        getRecrodingFlag: function (){
+        getRecordingFlag: function (){
             return this.recrodingFlag;                
         },
 
@@ -93,5 +93,6 @@
     }
 
     HotCircle.init();
+    window.HotCircle = HotCircle;
 
 })();
