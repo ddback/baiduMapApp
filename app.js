@@ -137,6 +137,10 @@
              $("#hotCircle").show();
          });
 
+         $("#tool_get_circle").click(function (){
+                getBoundary();    
+         });
+
          $("#tool_add_district").click(function (){
              hideAllFeaturePanel();
              $("#district").show();
@@ -147,10 +151,7 @@
              $("#routeNavigation").show();
          });
 
-         $("#tool_add_district").click(function (){
-                //getBoundary();    
-         });
-
+         
          $(".hideHandler").each(function (index, item){
              $(item).click((function(o){
                  return function (){
@@ -162,7 +163,7 @@
 
      function getBoundary(){       
          var bdary = new BMap.Boundary();
-         bdary.get(App.city, function(rs){       //获取行政区域
+         bdary.get('小店区', function(rs){       //获取行政区域
              App.map.clearOverlays();        //清除地图覆盖物       
              var count = rs.boundaries.length; //行政区域的点有多少个
              for(var i = 0; i < count; i++){

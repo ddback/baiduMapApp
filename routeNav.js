@@ -139,6 +139,8 @@
                         }
 
                         App.map.setViewport(points);
+                    }else {
+                        alert("Not found!")
                     }
                                   
                 }
@@ -155,8 +157,8 @@
                     return function (){
                         var types = id.split('_'),
                             inputId = types.slice(1).join('_'); 
+
                         _searchType = types[2];
-                        console.log(_searchType);
                         RouteNav.search($('#' + inputId).val());
                     }
                 })(id));
