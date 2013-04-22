@@ -1,62 +1,70 @@
 (function (){
 
-    var _baseURL = "/district/",
-        _districtPolygons = [];
+    var _baseURL = "/district/";
 
     /*
     * 
     * district data:
     *  [{
     *    id: 1,
-    *    name: '小店区',
-    *    hotspot: [{
-    *       id: '324jfkjewlkjk',
-    *       x: 1232142,
-    *       y: 232132
-    *    }, 
-    *    {
-    *       id: 'e222323fkj',
-    *       x: 2343432,
-    *       y: 232132
-    *    }]
+    *    name: '小店区'
     *  }, 
     *  {
     *    id: 2,
-    *    name: '尖草坪区',
-    *    hotspot: [{
-    *       id: '324jfkjewlkjk',
-    *       x: 1232142,
-    *       y: 232132
-    *    }]
+    *    name: '尖草坪区'
     *  }]
     *
     * */
 
+    var DistrictData = [{id: 1, name: '小店区'}, 
+                        {id: 2, name: '尖草坪区'},
+                        {id: 3, name: '杏花岭区'},
+                        {id: 4, name: '万柏林区'},
+                        {id: 5, name: '迎泽区'},
+                        {id: 6, name: '晋源区'}];
 
-    function _getBoundary(districtName, callback){       
+    var _districtNameStyle = {
+        width: 'auto',
+        height: '20px',
+        background: '#ccc',
+        border: '1px solid blue'
+    };
+
+
+    function _setBoundary(districtName, callback){       
          var bdary = new BMap.Boundary();
 
          bdary.get(districtName, function(rs){   
              var count = rs.boundaries.length;
 
              for(var i = 0; i < count; i++){
-                 var ply = new BMap.Polygon(rs.boundaries[i], {strokeWeight: 2, strokeColor: "#ff0000"});
-                 App.map.setViewport(ply.getPath());           
+                 var ply = new BMap.Polygon(rs.boundaries[i], {fillColor: '#d3e4f3', strokeWeight: 2, strokeColor: "#2A55FF"}),
+                     label = new BMap.Label(districtName);
+                
+                 label.setStyle(_districtNameStyle);
+                 label.setPosition(ply.getBounds().getCenter());
+                 App.map.addOverlay(ply);
+                 App.map.addOverlay(label);
+                 ply.addEventListener('click', function (){
+                    if (callback)
+                        callback.call(ply);
+                 });
+
+                 ply.addEventListener('mouseover', function (){
+                    ply.setFillColor('#FFAAFF');
+                 });
+
+                 ply.addEventListener('mouseout', function (){
+                    ply.setFillColor('#d3e4f3');
+                 });
              }                
          });   
      }
 
     var District = {
         init: function (){
+            this.drawBoundary(DistrictData);
             this.bindEvent();             
-        },
-
-        addDistrictPolygon: function (polygon){
-            _distrctPolygons.push(polygon)
-        },
-
-        getDistrictPolygons: function (){
-            return _districtPolygons;
         },
 
         getDistrict: function (name, callback){
@@ -74,21 +82,19 @@
             });
         },
 
-        drawBoundary: function (){
-        
-        
-        
-        },
-
-        get: function (data){
+        drawBoundary: function (data){
             if (!data)
                 return;
             
-            for (var i = 0, l = data; i < l; i ++){
-                var distict = data[i];
-                
-            
+            for (var i = 0, l = data.length; i < l; i ++){
+                var district = data[i];
+
+                _setBoundary(district.name, function (){
+                    //TODO
+                });
             }
+            
+            App.map.setViewport();
         },
 
         bindEvent: function (){
