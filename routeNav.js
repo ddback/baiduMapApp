@@ -78,6 +78,32 @@
             }
         },
 
+        drawRoute: function (){
+            App.map.clearOverlays();      
+
+            var routePoints = this.getRoutePoints(),
+                walking = new BMap.WalkingRoute(App.map, {
+                    renderOptions : {
+                        map: App.map,
+                        autoViewport: true
+                    }
+                });
+
+            console.log(routePoints);
+
+            for (var i = 0, l = routePoints.length - 1; i < l; i ++){
+                var start = new BMap.Point(routePoints[i].x, routePoints[i].y),
+                    end = new BMap.Point(routePoints[i + 1].x, routePoints[i + 1].y);
+
+                walking.search(start, end);
+                walking.setSearchCompleteCallback(function (){
+                    console.log(walking.getResults());
+                    console.log(walking.getResults().getNumPlans());
+                });
+            }
+
+        },
+
         setSelectedMarker: function (marker){
             _selectedMarker = marker;               
         },
@@ -97,16 +123,15 @@
                 'address': currentMarker.address
             });
             
-            console.log(this.getRoutePoints());
-
             this.drawRoutePoint();
+            this.drawRoute();
         },
 
         search: function(keyWords){
             if (!keyWords)
                 return;
 
-            var localSearch = new BMap.LocalSearch(App.map, {
+            var localSearch = new BMap.LocalSearch(App.city, {
                 onSearchComplete: function (results){
                     if (localSearch.getStatus() === BMAP_STATUS_SUCCESS){
                         var points = []; 
@@ -128,13 +153,15 @@
                                     offsetX: -15,
                                     offsetY: -15
                                 },
-                                callback: function (){
-                                    RouteNav.setSelectedMarker({
-                                        point: point,
-                                        title: title,
-                                        address: address
-                                    });      
-                                }
+                                callback: (function (p, t, a){
+                                    return function (){
+                                        RouteNav.setSelectedMarker({
+                                            point: p,
+                                            title: t,
+                                            address: a
+                                        });      
+                                    }
+                                })(point, title, address)
                             });
                         }
 
