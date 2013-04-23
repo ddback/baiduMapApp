@@ -21,13 +21,19 @@
                         {id: 3, name: '杏花岭区'},
                         {id: 4, name: '万柏林区'},
                         {id: 5, name: '迎泽区'},
-                        {id: 6, name: '晋源区'}];
+                        {id: 6, name: '晋源区'},
+                        {id: 7, name: '清徐县'},
+                        {id: 8, name: '阳曲县'},
+                        {id: 9, name: '娄烦县'},
+                        {id: 10, name: '古交县'}];
 
     var _districtNameStyle = {
-        width: 'auto',
-        height: '20px',
-        background: '#ccc',
-        border: '1px solid blue'
+        'width': 'auto',
+        'height': '20px',
+        'line-height': '20px',
+        'background': '#ccc',
+        'border-radius': '3px',
+        'border': '1px solid blue'
     };
 
 
@@ -45,10 +51,16 @@
                  label.setPosition(ply.getBounds().getCenter());
                  App.map.addOverlay(ply);
                  App.map.addOverlay(label);
-                 ply.addEventListener('click', function (){
-                    if (callback)
-                        callback.call(ply);
-                 });
+                 ply.addEventListener('click', (function (polygon){
+                    return function (){
+                        alert('you click me!');
+                        if (callback)
+                            callback.call(ply);
+
+                        polygon.setFillColor('#FFAAFF');
+                        App.map.setViewport(polygon.getPath());
+                    }
+                 })(ply));
 
                  ply.addEventListener('mouseover', function (){
                     ply.setFillColor('#FFAAFF');
@@ -63,7 +75,6 @@
 
     var District = {
         init: function (){
-            this.drawBoundary(DistrictData);
             this.bindEvent();             
         },
 
@@ -84,7 +95,7 @@
 
         drawBoundary: function (data){
             if (!data)
-                return;
+                data = DistrictData;
             
             for (var i = 0, l = data.length; i < l; i ++){
                 var district = data[i];
@@ -93,8 +104,16 @@
                     //TODO
                 });
             }
+
+            //调整视角
+            var cityBoundary = new BMap.Boundary();
+            cityBoundary.get(App.city, function (rs){
+                 var ply = new BMap.Polygon(rs.boundaries[0]);
+
+                 App.map.setViewport(ply.getPath());
             
-            App.map.setViewport();
+            });
+            
         },
 
         bindEvent: function (){

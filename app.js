@@ -138,12 +138,13 @@
          });
 
          $("#tool_get_circle").click(function (){
-                getBoundary();    
+             //getBoundary();    
          });
 
-         $("#tool_add_district").click(function (){
-             hideAllFeaturePanel();
-             $("#district").show();
+         $("#tool_get_district").click(function (){
+             //hideAllFeaturePanel();
+             //$("#district").show();
+             District.drawBoundary();
          });
 
          $("#tool_route_nav").click(function (){
@@ -161,19 +162,6 @@
          });
      }
 
-     function getBoundary(){       
-         var bdary = new BMap.Boundary();
-         bdary.get('小店区', function(rs){       //获取行政区域
-             App.map.clearOverlays();        //清除地图覆盖物       
-             var count = rs.boundaries.length; //行政区域的点有多少个
-             for(var i = 0; i < count; i++){
-                 var ply = new BMap.Polygon(rs.boundaries[i], {strokeWeight: 2, strokeColor: "#ff0000"}); //建立多边形覆盖物
-                 App.map.addOverlay(ply);  //添加覆盖物
-                 App.map.setViewport(ply.getPath());    //调整视野         
-             }                
-         });   
-     }
-     
      App.bindEvent();
      window.App = App;
 })();
