@@ -73,17 +73,33 @@
                 HotCircle.polyline = getPolyline(HotCircle.getPoints());
                 App.map.addOverlay(HotCircle.polyline);
             }
+         }else if (isDividing){
+                DivideOrder.setStartRectPoint({'x': x, 'y': y});
+                DivideOrder.rect = getPolygon(DivideOrder.getRectPoints());
+                App.map.addOverlay(DivideOrder.rect);
          }
      }
 
      function mapMouseMove (e){
          var x = e.point.lng,
              y = e.point.lat,
-             isRecording = HotCircle.getRecordingFlag();
+             isRecording = HotCircle.getRecordingFlag(),
+             isDividing = false;
 
          if (isRecording && HotCircle.polyline){
              var tempPoints = HotCircle.getPoints().concat([{'x': x, 'y': y}]);
              HotCircle.polyline.setPath(instancePointsArr(tempPoints));
+         }else if (isDividing && DivideOrder.rect){
+             DivideOrder.setEndRectPoint({'x': x, 'y': y});
+
+             var tempPoints = DivideOrder.getRectPoints();
+             DivideOrder.rect.setPath(instancePointsArr(tempPoints));
+         }
+     }
+
+     function mapMouseUp (e){
+         if (isDividing){
+            console.log(23);
          }
      }
 
@@ -100,14 +116,18 @@
              HotCircle.polyline = null;
              HotCircle.clearPoints();
              App.map.addOverlay(polygon);
+         }else if (isDividing){
+             DivideOrder.setEndRectPoint({'x': x, 'y': y});
+
+             var rect = getPolygon(DivideOrder.getRectPoints());
+             App.map.removeOverlay(DivideOrder.rect);
+             DivideOrder.rect = null;
+             App.map.addOverlay(rect);
          }
-     
      }
 
-     
-
      function getPolyline (points){
-         return new BMap.Polyline(instancePointsArr(points), {strokeColor: "red", strokeWeight: 6, strokeOpacity: 0.5});
+         return new BMap.Polyline(instancePointsArr(points), {strokeColor: "red", strokeWeight: 3, strokeOpacity: 0.5});
      }
 
      function hideAllFeaturePanel (){
@@ -115,7 +135,7 @@
      }
 
      function getPolygon (points){
-         return new BMap.Polygon(instancePointsArr(points), {strokeColor: "red", strokeWeight: 6, strokeOpacity: 0.5});
+         return new BMap.Polygon(instancePointsArr(points), {strokeColor: "red", strokeWeight: 3, strokeOpacity: 0.5});
      }
 
      App.bindEvent = function (){
@@ -125,6 +145,10 @@
 
          App.map.addEventListener('mousemove', function (e){
              mapMouseMove(e);
+         });
+
+         App.map.addEventListener('mouseup', function (e){
+             mapMouseUp(e);
          });
 
          App.map.addEventListener('dblclick', function (e){
