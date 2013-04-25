@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130420022446) do
+ActiveRecord::Schema.define(version: 20130425140720) do
 
   create_table "districts", force: true do |t|
     t.string   "name"
@@ -30,5 +30,18 @@ ActiveRecord::Schema.define(version: 20130420022446) do
   end
 
   add_index "hot_circles", ["district_id"], name: "index_hot_circles_on_district_id"
+
+  create_table "orders", force: true do |t|
+    t.string   "name"
+    t.string   "telephone"
+    t.float    "lng"
+    t.float    "lat"
+    t.string   "address"
+    t.string   "content"
+    t.string   "customer"
+    t.integer  "importance"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
 end
