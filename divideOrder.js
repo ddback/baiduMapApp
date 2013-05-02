@@ -1,5 +1,41 @@
 (function (){
 
+    /*
+     *  divideOrder Data
+     *  需要订单数据和送单人员数据，订单数据用以确定订单的位置，送单人员数据用于分单后进行订单指定
+     *  
+     *  example:
+     *  order data struct
+     *  var OrderData = [
+     *      {
+     *          id: '3324edwrjkl32j4',//订单编号,
+     *          lng: 120.213123, //订单经纬度
+     *          lat: 90.324234,
+     *          startTime: '下单时间', //time,
+     *          finishTime: '完成时间', //time,
+     *          address: '地址', //string
+     *          content: '内容', //string
+     *          customer: '联系人', //string
+     *          member: '经手人', //string  送单完成人, 需与member表关联
+     *          telephone: '电话', //string (may be include '-'),
+     *          sign: 1, //表示是否已经处理，0 未处理 1 已处理未完成 2 已完成,
+     *          other: ''//预留字段
+     *      }
+     *  ]
+     *  
+     *  var MemberData = [
+     *      {
+     *          id: '32jlwjrlewjr', //人员编号,
+     *          name: '名称', //string
+     *          image: '人员图像', //string(image url)
+     *          telephone: '电话', //string
+     *          gender: '姓别', //string
+     *          other: ''//预留字段 
+     *      }
+     *  ]
+     *
+     * */
+
     var _rectPoints = [],
         _startPoint = {'x': 0, 'y': 0},
         _endPoint = {'x': 0, 'y': 0},
