@@ -2,7 +2,7 @@ MapApi::Application.routes.draw do
   post "/hotCircle/" => "hot_circle#create"
   delete "/hotCircle/:name" => "hot_circle#delete"
   get "/hotCircle/:name" => "hot_circle#get"
-  get "/hotCircle/all"  => "hot_circle#all"
+  get "/hotCircle/"  => "hot_circle#all"
 
   post "/district/new" => "district#create"
   delete "/district/:name" => "district#delete"

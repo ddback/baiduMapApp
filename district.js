@@ -143,7 +143,6 @@
         }
     }
 
-    District.init();
     window.District = District;
 
 })();

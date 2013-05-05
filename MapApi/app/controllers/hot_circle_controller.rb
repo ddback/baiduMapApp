@@ -2,9 +2,11 @@ class HotCircleController < ActionController::Base
     def all
         @hot_circles = HotCircle.all
 
-        respond_to do |format|
-            format.json {render :json => @hot_circles}
-        end
+        render :json => @hot_circles
+
+        #respond_to do |format|
+            #format.json {render :json => @hot_circles}
+        #end
     end
 
     def get
@@ -27,21 +29,27 @@ class HotCircleController < ActionController::Base
         @hot_circle = HotCircle.find(params[:name])
 
         if @hot_circle.destory
-            render to :json => {:error => 'Ok', :status => 1}
+            render :json => {:error => 'Ok', :status => 1}
         end
 
     end
 
     def create
-        @hot_circle = HotCircle.new(:name => params[:name], :district => params[:district], :points => params[:points], :strokeStyle => params[:strokeStyle])
+        @district = District.find(params[:district])
+        #@hot_circle = HotCircle.new(:name => params[:name], :district => params[:district], :points => params[:points], :strokeStyle => params[:strokeStyle])
         
-        respond_to do |format|
-            if @hot_circle.save
-                format.json {render :json => @hot_circle,
-                            :status => :created}
-            else
-                format.json {render :json => @hot_circle.errors, :status => :unprocessable_entity}
-            end
+        @hot_circle = @district.hotCircles.create(:name => params[:name], :points => params[:points], :storkeStyle => params[:strokeStyle])
+
+        #@hot_circle = HotCircle.new(params[:hot_circle])
+
+        #respond_to do |format|
+        if @hot_circle.save
+            #format.json {render :json => @hot_circle,
+                        #:status => :created}
+            render :json => {:status => 'Ok'}
+        else
+            #format.json {render :json => @hot_circle.errors, :status => :unprocessable_entity}
         end
+        #end
     end
 end

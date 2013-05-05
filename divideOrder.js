@@ -96,17 +96,21 @@
             _rectPoints = [];                
         },
 
+        getStartRectPoint: function (){
+            return _startPoint;                 
+        },
+
         setStartRectPoint: function (point){
             this.clearRectPoints();
             _startPoint = point;
         },
 
         setEndRectPoint: function (point){
+            _endPoint = point;             
             _rectPoints[0] = {'x': _startPoint.x, 'y': _startPoint.y};
             _rectPoints[1] = {'x': _endPoint.x, 'y': _startPoint.y};
             _rectPoints[2] = {'x': _endPoint.x, 'y': _endPoint.y};
             _rectPoints[3] = {'x': _startPoint.x, 'y': _endPoint.y};
-            _endPoint = point;             
         },
 
         getRectPoints: function (){
@@ -165,7 +169,7 @@
             var divideFormHtml = _getDivideFormHtml(),
                 point = new BMap.Point(x, y);
 
-            this.divideFormInfoWin = new InfoWindow(divideFormHtml);
+            this.divideFormInfoWin = new BMap.InfoWindow(divideFormHtml);
             App.map.openInfoWindow(this.divideFormInfoWin, point);
         },
 

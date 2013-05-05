@@ -92,7 +92,6 @@
         }
     }
 
-    HotCircle.init();
     window.HotCircle = HotCircle;
 
 })();

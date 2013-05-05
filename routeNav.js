@@ -89,11 +89,10 @@
                     }
                 });
 
-            console.log(routePoints);
 
-            for (var i = 0, l = routePoints.length - 1; i < l; i ++){
-                var start = new BMap.Point(routePoints[i].x, routePoints[i].y),
-                    end = new BMap.Point(routePoints[i + 1].x, routePoints[i + 1].y);
+            for (var i = 0, l = routePoints.length; i < l; i ++){
+                var start = new BMap.Point(routePoints[i].lng1, routePoints[i].lat1),
+                    end = new BMap.Point(routePoints[i].lng2, routePoints[i].lat2);
 
                 walking.search(start, end);
                 walking.setSearchCompleteCallback(function (){
@@ -194,8 +193,6 @@
                    
         }
     }
-
-    RouteNav.init();
 
     window.RouteNav = RouteNav;
 
