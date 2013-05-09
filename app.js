@@ -3,7 +3,7 @@
      var App = {};
 
      App.city = "太原";
-     App.URL = "http://www.shihuangshu.com/external/";
+     App.URL = "http://www.shihuangshu.com/api/index.php?app=transport&act=";
 
      //set map attribute
      App.container = document.getElementById('container');
@@ -139,6 +139,7 @@
              DivideOrder.rect = null;
              DivideOrder.setBounds(DivideOrder._rect.getBounds());
              DivideOrder.showDivideForm(x, y);
+             DivideOrder.setOrdersInBounds();
              DivideOrder.setDividingFlag(false);
              App.map.removeOverlay(DivideOrder.rect);
              App.map.addOverlay(DivideOrder._rect);
@@ -175,10 +176,25 @@
          return new BMap.Polygon(instancePointsArr(points), {strokeColor: "red", strokeWeight: 3, strokeOpacity: 0.5});
      }
 
-     function _fillMemberList(){
-         $.get(App.URL + 'getMembers.php', function (results){
+     function _getDataList(action, callback) {
+         $.get(App.URL + action, function (results){
               if (!results)
                  return;
+
+              results = JSON.parse(results);
+
+              if (callback)
+                  callback(results);
+
+         }, 'jsonp');
+     }
+
+     function _fillMemberList(){
+         $.get(App.URL + 'GetCourierData', function (results){
+              if (!results)
+                 return;
+
+              results = JSON.parse(results);
 
               for (var i = 0, l = results.length; i < l; i ++){
                   var name = results[i].truename,
@@ -229,6 +245,7 @@
          //tool menu event
          $("#tool_add_circle").click(function (){
              _hideAllFeaturePanel();
+
              $("#hotCircle").show();
          });
 
@@ -237,22 +254,37 @@
          });
 
          $("#tool_get_district").click(function (){
-             //_hideAllFeaturePanel();
-             //$("#district").show();
+             _hideAllFeaturePanel();
              District.drawBoundary();
          });
 
          $("#tool_route_nav").click(function (){
+             App.map.clearOverlays();
              _hideAllFeaturePanel();
-             $("#routeNavigation").show();
+
+             var tracePanel = $("#routeTrace");
+             tracePanel.toggle();
+
+             _getDataList('GetNavigation', function (navData){
+                 //TODO;
+             });
          });
 
-
          $("#tool_order").click(function (){
-             DivideOrder.setDividingFlag(true);
+             App.map.clearOverlays();
+             _hideAllFeaturePanel();
+
+             _getDataList('GetOrderData', function (orderList){
+                  DivideOrder.setDividingFlag(true);
+                  DivideOrder.setOrders(orderList);
+                  DivideOrder.drawOrderMarker();
+             });
          });
 
          $("#tool_track").click(function (){
+             App.map.clearOverlays();
+             _hideAllFeaturePanel();
+
              var tracePanel = $("#routeTrace");
              tracePanel.toggle();
          });

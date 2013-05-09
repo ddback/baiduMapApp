@@ -54,6 +54,10 @@
 
         },
 
+        setRoutePoints: function (points){
+            _routePoints = points;
+        },
+
         getRoutePoints: function (){
             return _routePoints;             
         },

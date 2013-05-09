@@ -136,7 +136,7 @@
         },
 
         drawOrdersMarker: function (){
-            var orders = this.getOrders;
+            var orders = this.getOrders();
 
             for (var i = 0, l = orders.length; i < l; i ++){
                 var order = orders[i],

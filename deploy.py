@@ -35,7 +35,7 @@ def main():
         if not os.path.exists(deploy_path):
             os.makedirs(deploy_path)
 
-        unInclude_list = ['MapApi', 'README.md', '.git', __file__]
+        unInclude_list = ['MapApi', 'README.md', '.git', 'images', __file__]
         paths = get_special_paths('./', unInclude_list)
         copy_to(paths, deploy_path)
 
