@@ -42,18 +42,6 @@
             _routePoints = [];
         },
 
-        addRoutePoint: function (point){
-            var routePoints = this.getRoutePoints(),
-                len = routePoints.length;
-
-            if (len < 2){
-                _routePoints.push(point);
-            }else {
-                _routePoints.splice(len - 2, 0, point);
-            }
-
-        },
-
         setRoutePoints: function (points){
             _routePoints = points;
         },
@@ -86,23 +74,44 @@
             App.map.clearOverlays();      
 
             var routePoints = this.getRoutePoints(),
-                walking = new BMap.WalkingRoute(App.map, {
-                    renderOptions : {
-                        map: App.map,
-                        autoViewport: true
-                    }
-                });
-
-
+                viewPath = [],
+                routePlans = [],
+                planNum = 0;
+                
             for (var i = 0, l = routePoints.length; i < l; i ++){
                 var start = new BMap.Point(routePoints[i].lng1, routePoints[i].lat1),
                     end = new BMap.Point(routePoints[i].lng2, routePoints[i].lat2);
 
-                walking.search(start, end);
-                walking.setSearchCompleteCallback(function (){
-                    console.log(walking.getResults());
-                    console.log(walking.getResults().getNumPlans());
+                viewPath.push(start);
+                viewPath.push(end);
+
+                var walking = new BMap.WalkingRoute(App.map, {
+                    panel: "routeNavResult"
                 });
+
+                walking.search(start, end);
+                walking.setSearchCompleteCallback((function (walking){
+                    return function (){
+                        routePlans.push(walking.getResults().getPlan(0));
+
+                        if (++ planNum === routePoints.length){
+                            App.map.setViewport(viewPath);
+
+                            for (var i = 0, l = routePlans.length; i < l; i ++){
+                                var plan = routePlans[i],
+                                    routeNum = plan.getNumRoutes();
+                                
+                                for (var j = 0; j < routeNum; j ++){
+                                    var route = plan.getRoute(j),
+                                        path = route.getPath(),
+                                        polyline = new BMap.Polyline(path);
+                                    
+                                    App.map.addOverlay(polyline);
+                                }
+                            }
+                        }
+                    }
+                })(walking));
             }
 
         },

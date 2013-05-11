@@ -1,23 +1,5 @@
 (function (){
 
-    /*
-     * path Data
-     * 需要提供路径点的集合，包括送单人员的姓名
-     *
-     * exmaple
-     * var PathData = {
-     *    member: '人员姓名',
-     *    image: 'url', //若此字段没有，则显示默认图像
-     *    points: [
-     *      {lng: 120.321321, lat: 90.32432, finishTime: time},
-     *      {lng: 121.321321, lat: 91.32432, finishTime: time},
-     *      {lng: 122.321321, lat: 92.32432, finishTime: time},
-     *      {lng: 123.321321, lat: 93.32432, finishTime: time}
-     *    ]
-     * }
-     * */
-
-
     var PathReplay = {
 
         getReplayPath: function (){
@@ -30,16 +12,33 @@
 
         replay: function (){
             var path = this.getReplayPath(),
-                points = path.points,
+                points = path.position,
                 len = points.length;
 
             if (!len)
                 return;
 
-            var memMard = App.helper.addMark({
-                    point: new BMap.point(points[0].lng, points[0].lat),
+            var routePaths = [];
+            for (var i = 0; i < len; i ++){
+                var point = new BMap.Point(points[i].lng, points[i].lat);
+
+                routePaths.push(point);
+            }
+
+            App.map.removeOverlay(this.polyline);
+            this.polyline = new BMap.Polyline(routePaths, {
+                "strokeStyle": "dashed"
+            });
+
+            App.map.addOverlay(this.polyline);
+            App.map.setViewport(routePaths);
+
+
+            App.map.removeOverlay(this.memMard);
+            this.memMard = App.helper.addMarker({
+                    point: routePaths[0],
                     icon: {
-                        url: path.image ? path.image : defaultMemberUrl,
+                        url: path.avatar ? path.avatar : defaultMemberUrl,
                         width: 30,
                         height: 30
                     }
@@ -48,14 +47,16 @@
             var i = 0,
                 replayT;
 
+            var self = this;
             var _replay = function (){
                 clearTimeout(replayT);
-                var point = new BMap.point(points[i].lng, points[i].lat);
-                memMard.setPosition(point);
+                var point = routePaths[i];
+
+                self.memMard.setPosition(point);
                 replayT = setTimeout(function (){
                     if (++ i < len)
-                        replayFun();
-                }, 300);
+                        _replay();
+                }, 350);
             }
 
             _replay();

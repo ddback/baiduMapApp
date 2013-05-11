@@ -1,41 +1,5 @@
 (function (){
 
-    /*
-     *  divideOrder Data
-     *  需要订单数据和送单人员数据，订单数据用以确定订单的位置，送单人员数据用于分单后进行订单指定
-     *  
-     *  example:
-     *  order data struct
-     *  var OrderData = [
-     *      {
-     *          id: '3324edwrjkl32j4',//订单编号,
-     *          lng: 120.213123, //订单经纬度
-     *          lat: 90.324234,
-     *          startTime: '下单时间', //time,
-     *          finishTime: '完成时间', //time,
-     *          address: '地址', //string
-     *          content: '内容', //string
-     *          customer: '联系人', //string
-     *          member: '经手人', //string  送单完成人, 需与member表关联
-     *          telephone: '电话', //string (may be include '-'),
-     *          sign: 1, //表示是否已经处理，0 未处理 1 已处理未完成 2 已完成,
-     *          other: ''//预留字段
-     *      }
-     *  ]
-     *  
-     *  var MemberData = [
-     *      {
-     *          id: '32jlwjrlewjr', //人员编号,
-     *          name: '名称', //string
-     *          image: '人员图像', //string(image url)
-     *          telephone: '电话', //string
-     *          gender: '姓别', //string
-     *          other: ''//预留字段 
-     *      }
-     *  ]
-     *
-     * */
-
     var _rectPoints = [],
         _startPoint = {'x': 0, 'y': 0},
         _endPoint = {'x': 0, 'y': 0},
@@ -49,22 +13,24 @@
 
         _orderImageUrl = {
             'signed': 'images/map-blue-icon.png',
-            'unsigned': 'images/map-green-icon.png',
-            'selected': 'images/map-red-icon.png'
+            'unsigned': 'images/map-red-icon.png',
+            'selected': 'images/map-green-icon.png'
         };
 
     function _getOrderInfoHtml(order){
         if (!order)
             return;
 
-        var infoHtml = "" + 
+        var infoHtml = "" 
             + "<div><ul>"  
-            + "<li>编号：" + order.id + "</li>"           
-            + "<li>订单人:" + order.customer + "</li>"           
-            + "<li>地址:" + order.address + "</li>"           
-            + "<li>电话:" + order.telephone + "</li>"           
-            + "<li>订单内容:" + order.content + "</li>"           
-            + "<li>是否完成:" + (order.sign ? '已完成': '未完成') + '</li>'           
+            + "<li>编号：" + order.order_id + "</li>"           
+            + "<li>金额：" + order.amount + "</li>"           
+            + "<li>客户地址:" + order.address + "</li>"           
+            + "<li>客户电话:" + order.telephone + "</li>"           
+            + "<li>客户要求:" + order.remark + "</li>"           
+            + "<li>客户备注:" + order.calling_remark + "</li>"           
+
+            + "<li>餐厅地址:" + order.restaurant + "</li>"           
             + "</ul></div>";
 
         return infoHtml;
@@ -72,13 +38,22 @@
     
     
     function _getDivideFormHtml(){
-        var formHtml = "" + 
-            + "将选中的订单分给:"
-            + "<form action='' method='POST'>"
-            + "<select></select>"
-            + "<input type='submit' value='Submit'/>"
-            + "</form>";
 
+        var memberList = App.memberList,
+            formHtml = "<p>将选中的订单分给:</p>"
+                    + "<select id='divideMemberList'>{$}</select>"
+                    + "<button onclick='DivideOrder.submit();'>确定</button>"
+                    + "<button onclick='DivideOrder.cancel();'>取消</button>"
+            options = '';
+
+        for (var i = 0, l = memberList.length; i < l; i ++){
+            var name = memberList[i].truename,
+                id = memberList[i].courier_id;
+
+            options += '<option value="' + id  + '">' + name + '</option>';
+        }
+
+        formHtml = formHtml.replace('{$}', options);
         return formHtml;
     }
 
@@ -117,6 +92,52 @@
             return _rectPoints;
         },
 
+        submit: function (){
+            var ordersHash = this.ordersHash;
+
+            for (var orderId in ordersHash){
+                var status = ordersHash[orderId]['status'];
+
+                if (status){
+                    var marker = ordersHash[orderId]['marker'];
+
+                    App.map.removeOverlay(marker);
+                }
+            }
+
+            this.divideFormInfoWin.close();
+            App.map.removeOverlay(DivideOrder._rect);
+        },
+
+        cancel: function (){
+            var ordersHash = this.ordersHash;
+
+            for (var orderId in ordersHash){
+                var status = ordersHash[orderId]['status'];
+
+                if (status){
+                    var marker = ordersHash[orderId]['marker'],
+                        order = ordersHash[orderId]['data'],
+                        point = new BMap.Point(order.lng2, order.lat2);
+
+                    App.map.removeOverlay(marker);
+
+                    marker = App.helper.addMarker({
+                        point: point,
+                        infoHtml: _getOrderInfoHtml(order),
+                        icon: {
+                            url: _orderImageUrl['unsigned'],
+                            width: _orderImageSize.width,
+                            height: _orderImageSize.height
+                        }
+                   });
+               }
+            }
+
+            this.divideFormInfoWin.close();
+            App.map.removeOverlay(DivideOrder._rect);
+        },
+
         setOrders: function (orders){
             this.orders = orders;
             this.ordersHash = {};
@@ -125,8 +146,9 @@
                 var order = orders[i];
 
                 //initialize hash struct
-                this.ordersHash[order.id] = {}; 
-                this.ordersHash[order.id]['data'] = order;
+                this.ordersHash[order.order_id] = {}; 
+                this.ordersHash[order.order_id]['data'] = order;
+                this.ordersHash[order.order_id]['status'] = 0;
             }
 
         },
@@ -136,25 +158,32 @@
         },
 
         drawOrdersMarker: function (){
-            var orders = this.getOrders();
+            var orders = this.getOrders(),
+                viewPath = [];
 
             for (var i = 0, l = orders.length; i < l; i ++){
                 var order = orders[i],
-                    lng = order.lng,
-                    lat = order.lat,
-                    sign = order.sign,
-                    marker = App.helper.addMarker({
-                        point: new BMap.point(lng, lat),
+                    lng = order.lng2, //get custiomPosition
+                    lat = order.lat2,
+                    sign = order.sign;
+
+                var point = new BMap.Point(lng, lat);
+
+                viewPath.push(point);
+                var marker = App.helper.addMarker({
+                        point: new BMap.Point(lng, lat),
                         infoHtml: _getOrderInfoHtml(order),
                         icon: {
                             url: _orderImageUrl[sign ? 'signed' : 'unsigned'],
                             width: _orderImageSize.width,
                             height: _orderImageSize.height
                         }
-                    });
+                });
 
-                 this.ordersHash[order.id]['marker'] = marker;
+                this.ordersHash[order.order_id]['marker'] = marker;
             }
+
+            App.map.setViewport(viewPath);
         },
 
         setBounds: function (bounds){
@@ -182,15 +211,25 @@
                     return;
 
                 var order = ordersHash[orderId]['data'],
-                    point = new BMap.point(order.lng, order.lat),
-                    sign = order.sign,
-                    marker = ordersHash[order]['marker'],
-                    iconImageUrl =  _orderImageUrl[sign ? 'signed' : 'unsigned'];
+                    point = new BMap.Point(order.lng2, order.lat2),
+                    marker = ordersHash[orderId]['marker'],
+                    status = ordersHash[orderId]['status'];
 
-                if (bounds.containsPoint(point))
-                    iconImageUrl = _orderImageUrl['selected'];
-                    
-                marker.getIcon.setImageUrl(iconImageUrl);
+                if (bounds.containsPoint(point)){
+                    App.map.removeOverlay(marker);
+
+                    ordersHash[orderId]['marker'] = App.helper.addMarker({
+                        point: point,
+                        infoHtml: _getOrderInfoHtml(order),
+                        icon: {
+                            url: _orderImageUrl['selected'],
+                            width: _orderImageSize.width,
+                            height: _orderImageSize.height
+                        }
+                   });
+
+                   ordersHash[orderId]['status'] = 1;
+                }
             }
         }
 

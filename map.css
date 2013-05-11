@@ -11,7 +11,7 @@ li {list-style: none;}
     position: absolute;
     left: 50%;
     top: 0;
-    width: 600px;
+    width: 620px;
     height: 40px;
     background: #2a55ff;
     color: #fff;
@@ -29,12 +29,12 @@ li {list-style: none;}
     height: 30px;
     text-align: center;
     border-radius: 3px;
-    margin-top: 5px;
+    margin: 5px 3px 0 0;
     cursor: pointer;
     font: normal bold 14px/30px Microsoft YaHei;
 }
 
-#toolMenu li:hover {
+#toolMenu li:hover, #toolMenu li.cur {
     background: #fff;
     color: #2a55ff;
 }
@@ -57,7 +57,7 @@ li {list-style: none;}
     border: 10px solid rgba(182, 210, 236, 0.6);
 }
 
-#hotCircle, #routeNavigation, #routeTrace {
+#hotCircle, #routeNavigation, #routeTrace, #selectMember{
     display: none;
     position: absolute;
     bottom: 0;

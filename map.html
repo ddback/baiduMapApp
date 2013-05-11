@@ -13,8 +13,8 @@
         <ul>
         	<li id="tool_add_circle">新增商圈</li>
         	<li id="tool_get_circle">查看商圈</li>
-        	<li id="tool_get_district">查看行政区</li>
-            <li id="tool_route_nav">路线导航</li>
+        	<li id="tool_district">查看行政区</li>
+            <li id="tool_routeNav">路线导航</li>
             <li id="tool_order">一键分单</li>
             <li id="tool_track">轨迹跟踪</li>
         </ul>
@@ -52,14 +52,18 @@
         <div class="hideHandler">关闭</div>
         -->
     </div>
-    <div class="featurePanel" id="routeTrace">
+    <div class="featurePanel" id="selectMember">
         <select id="memberList" name=""></select>
-        <button>确定</button>
+        <button id="memberSure">确定</button>
+    </div>
+    <div id="routeNavResult">
     </div>
 </body>
+<script type="text/javascript" src="Data.js"></script>
 <script type="text/javascript" src="district.js"></script>
 <script type="text/javascript" src="hotCircle.js"></script>
 <script type="text/javascript" src="routeNav.js"></script>
 <script type="text/javascript" src="divideOrder.js"></script>
+<script type="text/javascript" src="pathReplay.js"></script>
 <script type="text/javascript" src="app.js"></script>
 </html>

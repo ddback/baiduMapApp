@@ -4,6 +4,10 @@
 
      App.city = "太原";
      App.URL = "http://www.shihuangshu.com/api/index.php?app=transport&act=";
+     App.curPart = {
+        name: 'district', //default
+        member: '' //submit member;
+     };
 
      //set map attribute
      App.container = document.getElementById('container');
@@ -28,10 +32,8 @@
                  infoWin = new BMap.InfoWindow(options.infoHtml)
 
              if (options.icon){
-                 var icon = new BMap.Icon(options.icon.url),
-                     iconSize = new BMap.Size(options.icon.width, options.icon.height);
+                 var icon = new BMap.Icon(options.icon.url, new BMap.Size(options.icon.width, options.icon.height));
 
-                 icon.setSize(iconSize);
                  marker.setIcon(icon);
              }
              
@@ -136,12 +138,12 @@
              DivideOrder.setEndRectPoint({'x': x, 'y': y});
 
              DivideOrder._rect = _getPolygon(DivideOrder.getRectPoints());
+             App.map.removeOverlay(DivideOrder.rect);
              DivideOrder.rect = null;
              DivideOrder.setBounds(DivideOrder._rect.getBounds());
              DivideOrder.showDivideForm(x, y);
              DivideOrder.setOrdersInBounds();
              DivideOrder.setDividingFlag(false);
-             App.map.removeOverlay(DivideOrder.rect);
              App.map.addOverlay(DivideOrder._rect);
              App.map.enableDragging();
              App.map.isDrawingRect = false;
@@ -177,24 +179,36 @@
      }
 
      function _getDataList(action, callback) {
-         $.get(App.URL + action, function (results){
-              if (!results)
-                 return;
+         //$.ajax({
+         //   type: 'GET',
+         //   url: App.URL + action,
+         //   success: function (results){
+         //       if (!results)
+         //           return;
 
-              results = JSON.parse(results);
+         //       results = JSON.parse(results);
 
-              if (callback)
-                  callback(results);
+         //       if (callback)
+         //         callback(results);
+         //   }
+         //});
 
-         }, 'jsonp');
+         var results = Data[action];
+
+         if (!results)
+             return;
+
+         if (callback)
+             callback(results);
      }
 
      function _fillMemberList(){
-         $.get(App.URL + 'GetCourierData', function (results){
+
+         _getDataList('GetCourierData', function (results){
               if (!results)
                  return;
 
-              results = JSON.parse(results);
+              App.memberList = results;
 
               for (var i = 0, l = results.length; i < l; i ++){
                   var name = results[i].truename,
@@ -202,7 +216,7 @@
 
                   $("<option value='" + id + "'>" + name + "</option>").appendTo("#memberList");
               }
-         }, 'jsonp');
+         });
      }
 
      function _getMapPoint(e){
@@ -243,31 +257,56 @@
          });
 
          //tool menu event
-         $("#tool_add_circle").click(function (){
-             _hideAllFeaturePanel();
+         //$("#tool_add_circle").click(function (){
+         //    _hideAllFeaturePanel();
 
-             $("#hotCircle").show();
+         //    $("#hotCircle").show();
+         //});
+
+         //$("#tool_get_circle").click(function (){
+         //    //getBoundary();    
+         //});
+         
+         App.trigger = {
+             routeNav: function (){
+                _getDataList('GetNavigation', function (navData){
+                    RouteNav.setRoutePoints(navData.points_pair);
+                    RouteNav.drawRoute();
+                });
+            },
+
+            track: function (){
+                _getDataList('CourierTrace', function (traceData){
+                    PathReplay.setReplayPath(traceData);
+                    PathReplay.replay();
+                });            
+            }
+         }
+
+         $("#toolMenu li").each(function (index, item){
+         
+             $(item).click(function (){
+                $(this).parent().find('li').removeClass('cur');   
+                $(this).addClass('cur');
+
+                var name = $(this).attr('id').split('_')[1];
+
+                App.curPart.name = name;
+
+             });
          });
 
-         $("#tool_get_circle").click(function (){
-             //getBoundary();    
-         });
-
-         $("#tool_get_district").click(function (){
+         $("#tool_district").click(function (){
              _hideAllFeaturePanel();
              District.drawBoundary();
          });
 
-         $("#tool_route_nav").click(function (){
+         $("#tool_routeNav").click(function (){
              App.map.clearOverlays();
              _hideAllFeaturePanel();
 
-             var tracePanel = $("#routeTrace");
+             var tracePanel = $("#selectMember");
              tracePanel.toggle();
-
-             _getDataList('GetNavigation', function (navData){
-                 //TODO;
-             });
          });
 
          $("#tool_order").click(function (){
@@ -277,7 +316,7 @@
              _getDataList('GetOrderData', function (orderList){
                   DivideOrder.setDividingFlag(true);
                   DivideOrder.setOrders(orderList);
-                  DivideOrder.drawOrderMarker();
+                  DivideOrder.drawOrdersMarker();
              });
          });
 
@@ -285,7 +324,7 @@
              App.map.clearOverlays();
              _hideAllFeaturePanel();
 
-             var tracePanel = $("#routeTrace");
+             var tracePanel = $("#selectMember");
              tracePanel.toggle();
          });
          
@@ -295,6 +334,20 @@
                     $(o).parent().hide();
                  }
              })(item));
+         });
+
+         $("#memberList").change(function (){
+             var value = $(this).val();
+
+             App.curPart.member = value;
+         })
+
+         $("#memberSure").click(function (){
+             var curPartName = App.curPart.name; 
+            
+             if (App.trigger[curPartName])
+                 App.trigger[curPartName]();
+
          });
      }
 
