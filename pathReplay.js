@@ -10,21 +10,10 @@
             this.replayPath = path;
         },
 
-        replay: function (){
-            var path = this.getReplayPath(),
-                points = path.position,
-                len = points.length;
+        draw: function (routePaths, T){
+            this.playing = true;
 
-            if (!len)
-                return;
-
-            var routePaths = [];
-            for (var i = 0; i < len; i ++){
-                var point = new BMap.Point(points[i].lng, points[i].lat);
-
-                routePaths.push(point);
-            }
-
+            var path = this.getReplayPath();
             App.map.removeOverlay(this.polyline);
             this.polyline = new BMap.Polyline(routePaths, {
                 "strokeStyle": "dashed"
@@ -32,7 +21,6 @@
 
             App.map.addOverlay(this.polyline);
             App.map.setViewport(routePaths);
-
 
             App.map.removeOverlay(this.memMard);
             this.memMard = App.helper.addMarker({
@@ -45,23 +33,62 @@
             });
 
             var i = 0,
-                replayT;
+                self = this;
 
-            var self = this;
-            var _replay = function (){
-                clearTimeout(replayT);
+            var replayT = setInterval(function (){
                 var point = routePaths[i];
 
-                self.memMard.setPosition(point);
-                replayT = setTimeout(function (){
-                    if (++ i < len)
-                        _replay();
-                }, 350);
-            }
+                if (++ i < routePaths.length && self.playing)
+                    self.memMard.setPosition(point);
+                else 
+                    clearInterval(replayT);
+            
+            }, T || 350);
 
-            _replay();
+        },
+
+        replay: function (T){
+            this.playing = false;
+            App.map.clearOverlays();
+
+            var path = this.getReplayPath(),
+                points = path.position,
+                len = points.length,
+                routePlans = [],
+                routePaths = [],
+                planNum = 0;
+
+            if (!len)
+                return;
+
+            for (var i = 0; i < len; i ++){
+                var point = new BMap.Point(points[i].lng, points[i].lat),
+                    walking = new BMap.WalkingRoute(App.map);
+
+                if (i < len - 1){
+                    var nextPoint = new BMap.Point(points[i + 1].lng, points[i + 1].lat);
+
+                    walking.search(point, nextPoint);
+                    walking.setSearchCompleteCallback((function (walking, index){
+                        return function (){
+                            routePlans[index] = walking.getResults().getPlan(0);
+
+                            if (++ planNum === len - 1){
+                                for (var j = 0; j < planNum; j ++){
+                                    var route = routePlans[j].getRoute(0),
+                                        path = route.getPath();
+
+                                    routePaths = routePaths.concat(path);    
+                                    PathReplay.draw(routePaths, T);
+                                }
+                            }
+                        
+                        }
+                    })(walking, i));
+                
+                }
+            }
         }
-    
     }   
 
     window.PathReplay = PathReplay;

@@ -64,6 +64,30 @@
              App.map.addOverlay(marker);
 
              return marker;
+         },
+
+         getDataList: function (action, callback){
+             //$.ajax({
+             //   type: 'GET',
+             //   url: App.URL + action,
+             //   success: function (results){
+             //       if (!results)
+             //           return;
+
+             //       results = JSON.parse(results);
+
+             //       if (callback)
+             //         callback(results);
+             //   }
+             //});
+
+             var results = Data[action];
+
+             if (!results)
+                 return;
+
+             if (callback)
+                 callback(results);
          }
      }
 
@@ -97,9 +121,9 @@
                 App.map.addOverlay(HotCircle.polyline);
              }
 
-         }else if (isDividing){
+         }else if (isDividing && e.button === 2){
              App.map.isDrawingRect = true;
-             App.map.disableDragging();
+             //App.map.disableDragging();
              App.map.removeOverlay(DivideOrder._rect || null);
              DivideOrder.setStartRectPoint({'x': x, 'y': y});
          }
@@ -114,7 +138,7 @@
          if (isRecording && HotCircle.polyline){
              var tempPoints = HotCircle.getPoints().concat([{'x': x, 'y': y}]);
              HotCircle.polyline.setPath(instancePointsArr(tempPoints));
-         }else if (isDividing && App.map.isDrawingRect){
+         }else if (isDividing && App.map.isDrawingRect && e.button === 2){
              DivideOrder.setEndRectPoint({'x': x, 'y': y});
 
              if (!DivideOrder.rect){
@@ -134,7 +158,7 @@
              y = e.point.lat,
              isDividing = DivideOrder.getDividingFlag();
 
-         if (isDividing && App.map.isDrawingRect){
+         if (isDividing && App.map.isDrawingRect && e.button === 2){
              DivideOrder.setEndRectPoint({'x': x, 'y': y});
 
              DivideOrder._rect = _getPolygon(DivideOrder.getRectPoints());
@@ -143,9 +167,9 @@
              DivideOrder.setBounds(DivideOrder._rect.getBounds());
              DivideOrder.showDivideForm(x, y);
              DivideOrder.setOrdersInBounds();
-             DivideOrder.setDividingFlag(false);
+             //DivideOrder.setDividingFlag(false);
              App.map.addOverlay(DivideOrder._rect);
-             App.map.enableDragging();
+             //App.map.enableDragging();
              App.map.isDrawingRect = false;
          }
      }
@@ -178,37 +202,13 @@
          return new BMap.Polygon(instancePointsArr(points), {strokeColor: "red", strokeWeight: 3, strokeOpacity: 0.5});
      }
 
-     function _getDataList(action, callback) {
-         //$.ajax({
-         //   type: 'GET',
-         //   url: App.URL + action,
-         //   success: function (results){
-         //       if (!results)
-         //           return;
-
-         //       results = JSON.parse(results);
-
-         //       if (callback)
-         //         callback(results);
-         //   }
-         //});
-
-         var results = Data[action];
-
-         if (!results)
-             return;
-
-         if (callback)
-             callback(results);
-     }
+     
 
      function _fillMemberList(){
 
-         _getDataList('GetCourierData', function (results){
+         App.helper.getDataList('GetCourierData', function (results){
               if (!results)
                  return;
-
-              App.memberList = results;
 
               for (var i = 0, l = results.length; i < l; i ++){
                   var name = results[i].truename,
@@ -236,19 +236,19 @@
          App.container.addEventListener('mousedown', function (e){
              var point = _getMapPoint(e);
 
-             _mapMouseDown({point: point});
+             _mapMouseDown({point: point, button: e.button});
          }, false);
 
          App.container.addEventListener('mousemove', function (e){
              var point = _getMapPoint(e);
 
-             _mapMouseMove({point: point});
+             _mapMouseMove({point: point, button: e.button});
          }, false);
 
          App.container.addEventListener('mouseup', function (e){
              var point = _getMapPoint(e);
              
-             _mapMouseUp({point: point});
+             _mapMouseUp({point: point, button: e.button});
 
          }, false);
 
@@ -269,14 +269,14 @@
          
          App.trigger = {
              routeNav: function (){
-                _getDataList('GetNavigation', function (navData){
+                App.helper.getDataList('GetNavigation', function (navData){
                     RouteNav.setRoutePoints(navData.points_pair);
                     RouteNav.drawRoute();
                 });
             },
 
             track: function (){
-                _getDataList('CourierTrace', function (traceData){
+                App.helper.getDataList('CourierTrace', function (traceData){
                     PathReplay.setReplayPath(traceData);
                     PathReplay.replay();
                 });            
@@ -286,6 +286,9 @@
          $("#toolMenu li").each(function (index, item){
          
              $(item).click(function (){
+                App.map.clearOverlays();
+                _hideAllFeaturePanel();
+
                 $(this).parent().find('li').removeClass('cur');   
                 $(this).addClass('cur');
 
@@ -293,37 +296,39 @@
 
                 App.curPart.name = name;
 
+                DivideOrder.setDividingFlag(name === 'order' ? true : false);
+
              });
          });
 
          $("#tool_district").click(function (){
-             _hideAllFeaturePanel();
-             District.drawBoundary();
+             App.helper.getDataList('GetDistrictData', function (districtData){
+                 District.setDistrictData(districtData);
+                 District.drawBoundary();
+             });
          });
 
          $("#tool_routeNav").click(function (){
-             App.map.clearOverlays();
-             _hideAllFeaturePanel();
 
              var tracePanel = $("#selectMember");
              tracePanel.toggle();
          });
 
          $("#tool_order").click(function (){
-             App.map.clearOverlays();
-             _hideAllFeaturePanel();
-
-             _getDataList('GetOrderData', function (orderList){
-                  DivideOrder.setDividingFlag(true);
+             App.helper.getDataList('GetOrderData', function (orderList){
                   DivideOrder.setOrders(orderList);
-                  DivideOrder.drawOrdersMarker();
+
+                  App.helper.getDataList('GetCourierData', function (results){
+                     DivideOrder.setMemberList(results);
+                     DivideOrder.drawOrdersMarker();
+                     DivideOrder.drawMemberMarker();
+                  });
              });
+
+             $('#ordersInfo').show();
          });
 
          $("#tool_track").click(function (){
-             App.map.clearOverlays();
-             _hideAllFeaturePanel();
-
              var tracePanel = $("#selectMember");
              tracePanel.toggle();
          });
@@ -353,7 +358,7 @@
 
      App.initialize = function (){
          App.bindEvent();
-         HotCircle.init();
+         //HotCircle.init();
          District.init();
          RouteNav.init();
          _fillMemberList();

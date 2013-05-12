@@ -37,10 +37,9 @@
     }
     
     
-    function _getDivideFormHtml(){
+    function _getDivideFormHtml (memberList){
 
-        var memberList = App.memberList,
-            formHtml = "<p>将选中的订单分给:</p>"
+        var formHtml = "<p>将选中的订单分给:</p>"
                     + "<select id='divideMemberList'>{$}</select>"
                     + "<button onclick='DivideOrder.submit();'>确定</button>"
                     + "<button onclick='DivideOrder.cancel();'>取消</button>"
@@ -55,6 +54,28 @@
 
         formHtml = formHtml.replace('{$}', options);
         return formHtml;
+    }
+
+    function _getMemHtml (mem){
+        var memHtml = "<div><ul>"
+            + "<li>姓名：" + mem.truename + "</li>"
+            + "<li>手机：" + mem.telephone + "</li>"
+            + "<li>是否空闲：" + (mem.is_available == 1 ? "空闲" : "忙") + "</li>"
+            + "<li>今日送餐数：" + mem.transport_num + "</li></ul>";
+    
+        return memHtml;
+    }
+
+    function _getOrderTableHtml (order, status, member, index){
+        var orderHtml = "<tr style='background-color:" + (index % 2 ? "#A6C2DE" : "#fff")+ "'>"
+            //+ "<td>" + order.order_id + "</td>"
+            + "<td>" + order.address + "</td>"
+            + "<td>" + order.restaurant + "</td>"
+            + "<td>" + (status === 2 ? "已分" : "未分") + "</td>"
+            + "<td>" + (member || '') + "</td>"
+            + "<td>" + (status === 2 ? "<button onclick=\"DivideOrder.redivide('" + order.order_id + "');\">重分</button>" : "") + "</td>";
+        
+        return orderHtml;
     }
 
     var DivideOrder = {
@@ -92,19 +113,43 @@
             return _rectPoints;
         },
 
+        redivide: function (orderId){
+            var orders = this.orders;
+
+            for (var i = 0, l = orders.length; i < l; i ++){
+                var order = orders[i];
+
+                if (order.order_id === orderId){
+                    this.ordersHash[order.order_id] = {}; 
+                    this.ordersHash[order.order_id]['data'] = order;
+                    this.ordersHash[order.order_id]['status'] = 0;
+                    break;
+                }
+            }
+            
+            this.drawOrdersMarker();
+        },
+
         submit: function (){
-            var ordersHash = this.ordersHash;
+            var ordersHash = this.ordersHash,
+                memberSelect = document.getElementById('divideMemberList'),
+                selectedOption = memberSelect.options[memberSelect.selectedIndex],
+                selectedValue = selectedOption.value,
+                selectedName = selectedOption.innerText;
 
             for (var orderId in ordersHash){
                 var status = ordersHash[orderId]['status'];
 
-                if (status){
+                if (status === 1){
+                    ordersHash[orderId]['status'] = 2;
+                    ordersHash[orderId]['member'] = selectedName;
+                    
                     var marker = ordersHash[orderId]['marker'];
-
                     App.map.removeOverlay(marker);
                 }
             }
 
+            this.updateOrdersList();
             this.divideFormInfoWin.close();
             App.map.removeOverlay(DivideOrder._rect);
         },
@@ -115,14 +160,14 @@
             for (var orderId in ordersHash){
                 var status = ordersHash[orderId]['status'];
 
-                if (status){
+                if (status === 1){
                     var marker = ordersHash[orderId]['marker'],
                         order = ordersHash[orderId]['data'],
                         point = new BMap.Point(order.lng2, order.lat2);
 
                     App.map.removeOverlay(marker);
 
-                    marker = App.helper.addMarker({
+                    ordersHash[orderId]['marker'] = App.helper.addMarker({
                         point: point,
                         infoHtml: _getOrderInfoHtml(order),
                         icon: {
@@ -157,33 +202,95 @@
             return this.orders;
         },
 
+        setMemberList: function (list){
+            this.memberList = list;
+        },
+
+        drawMemberMarker: function (){
+            var memberList = this.memberList;
+
+            for (var i = 0, l = memberList.length; i < l; i ++){
+                var mem = memberList[i];
+
+                var memMarker = App.helper.addMarker({
+                    point: new BMap.Point(mem.lng, mem.lat),
+                    infoHtml: _getMemHtml(mem),
+                    icon: {
+                        url: mem.avatar,   
+                        width: 30,
+                        height: 30
+                    }
+                }); 
+            }
+                          
+        },
+
         drawOrdersMarker: function (){
-            var orders = this.getOrders(),
+            var ordersHash = this.ordersHash,
                 viewPath = [];
 
-            for (var i = 0, l = orders.length; i < l; i ++){
-                var order = orders[i],
+            for (var orderId in ordersHash){
+                var order = ordersHash[orderId]['data'],
+                    marker = ordersHash[orderId]['marker'],
+                    status = ordersHash[orderId]['status'],
                     lng = order.lng2, //get custiomPosition
                     lat = order.lat2,
                     sign = order.sign;
 
-                var point = new BMap.Point(lng, lat);
+                if (status === 2)
+                    continue;
 
+                if (marker)
+                    App.map.removeOverlay(marker);
+
+                var point = new BMap.Point(lng, lat);
                 viewPath.push(point);
+
                 var marker = App.helper.addMarker({
-                        point: new BMap.Point(lng, lat),
-                        infoHtml: _getOrderInfoHtml(order),
-                        icon: {
-                            url: _orderImageUrl[sign ? 'signed' : 'unsigned'],
-                            width: _orderImageSize.width,
-                            height: _orderImageSize.height
-                        }
+                    point: new BMap.Point(lng, lat),
+                    infoHtml: _getOrderInfoHtml(order),
+                    icon: {
+                        url: _orderImageUrl[sign ? 'signed' : 'unsigned'],
+                        width: _orderImageSize.width,
+                        height: _orderImageSize.height
+                    }
                 });
 
-                this.ordersHash[order.order_id]['marker'] = marker;
+                ordersHash[orderId]['marker'] = marker;
             }
 
+            this.updateOrdersList();
             App.map.setViewport(viewPath);
+        },
+
+        updateOrdersList: function (){
+            var ordersHash = this.ordersHash,
+                tableHtml = '<table><tr height=28><td width=100>客户地址</td><td width=100>餐厅地址</td><td>状态</td><td>送单员</td><td>操作</td></tr>',
+                index = 0;
+
+            for (orderId in ordersHash){
+                var order = ordersHash[orderId]['data'],
+                    status = ordersHash[orderId]['status'],
+                    member = ordersHash[orderId]['member'];
+            
+                tableHtml += _getOrderTableHtml(order, status, member, ++ index);
+            }
+
+            tableHtml += "</table>";
+
+            document.getElementById('ordersInfo').innerHTML = tableHtml;
+        },
+
+        removeAllMarkers: function (){
+            var ordersHash = this.ordersHash;                
+
+            for (orderId in ordersHash){
+                var marker = ordersHash[orderId]['marker'];
+            
+                if (marker)
+                    App.map.removeOverlay(marker);
+            }
+                          
         },
 
         setBounds: function (bounds){
@@ -195,7 +302,8 @@
         },
 
         showDivideForm: function (x, y){
-            var divideFormHtml = _getDivideFormHtml(),
+            var memberList = this.memberList,
+                divideFormHtml = _getDivideFormHtml(memberList),
                 point = new BMap.Point(x, y);
 
             this.divideFormInfoWin = new BMap.InfoWindow(divideFormHtml);
@@ -215,7 +323,7 @@
                     marker = ordersHash[orderId]['marker'],
                     status = ordersHash[orderId]['status'];
 
-                if (bounds.containsPoint(point)){
+                if (bounds.containsPoint(point) && !status){
                     App.map.removeOverlay(marker);
 
                     ordersHash[orderId]['marker'] = App.helper.addMarker({
@@ -228,6 +336,7 @@
                         }
                    });
 
+                   //0, 未分， 1，选中， 2，已分
                    ordersHash[orderId]['status'] = 1;
                 }
             }

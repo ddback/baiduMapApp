@@ -3,6 +3,7 @@ body, html, ul, li{
     margin: 0;
     height: 100%;
     width: 100%;
+    font-size: 100%;
 }
 
 li {list-style: none;}
@@ -57,7 +58,7 @@ li {list-style: none;}
     border: 10px solid rgba(182, 210, 236, 0.6);
 }
 
-#hotCircle, #routeNavigation, #routeTrace, #selectMember{
+#hotCircle, #routeNavigation, #routeTrace, #selectMember, #ordersInfo {
     display: none;
     position: absolute;
     bottom: 0;
@@ -68,6 +69,11 @@ li {list-style: none;}
     border-radius: 0 10px 0 0;
     border: 10px solid rgba(182, 210, 236, 0.6);
 }
+
+#ordersInfo {height: 500px; width: 400px; overflow: auto;}
+
+#ordersInfo table {border-collapse: collapse; border: 1px solid #ccc;}
+#ordersInfo table tr td{padding: 3px; border: 1px solid #ccc; font-size: 0.8em;}
 
 .item {
     width: 100%;

@@ -85,9 +85,7 @@
                 viewPath.push(start);
                 viewPath.push(end);
 
-                var walking = new BMap.WalkingRoute(App.map, {
-                    panel: "routeNavResult"
-                });
+                var walking = new BMap.WalkingRoute(App.map);
 
                 walking.search(start, end);
                 walking.setSearchCompleteCallback((function (walking){

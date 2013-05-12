@@ -37,8 +37,10 @@
     };
 
 
-    function _setBoundary(districtName, callback){       
-         var bdary = new BMap.Boundary();
+    function _setBoundary(district, callback){       
+         var bdary = new BMap.Boundary(),
+             districtName = district.region_name,
+             districtId = district.region_id;
 
          bdary.get(districtName, function(rs){   
              var count = rs.boundaries.length;
@@ -53,9 +55,8 @@
                  App.map.addOverlay(label);
                  ply.addEventListener('click', (function (polygon){
                     return function (){
-                        alert('you click me!');
                         if (callback)
-                            callback.call(ply);
+                            callback.call(ply, districtId);
 
                         polygon.setFillColor('#FFAAFF');
                         App.map.setViewport(polygon.getPath());
@@ -78,41 +79,36 @@
             this.bindEvent();             
         },
 
-        getDistrict: function (name, callback){
-            var name = name || 'all';
-            $.get(_baseURL + name, function (result){
-                if(callback) 
-                    callback(result);
-            });
+        getDistrictData: function (){
+            return this.districtData;
         },
 
-        setDistrict: function (data, callback){
-            $.post(_baseURL + 'new', data, function (result){
-                if (callback)
-                    callback(result);
-            });
+        setDistrictData: function (data){
+            this.districtData = data;
         },
 
         drawBoundary: function (data){
             if (!data)
-                data = DistrictData;
+                data = this.getDistrictData();
             
             for (var i = 0, l = data.length; i < l; i ++){
                 var district = data[i];
 
-                _setBoundary(district.name, function (){
-                    //TODO
+                _setBoundary(district, function (id){
+                    //App.helper.getDataList('GetOrderData&region_id1=' + id, function (orderList){
+                    App.helper.getDataList('GetOrderData', function (orderList){
+                        if (!orderList)
+                            return;
+
+                        DivideOrder.removeAllMarkers();
+                        DivideOrder.setOrders(orderList);
+                        DivideOrder.drawOrdersMarker();
+                    });
                 });
             }
 
             //调整视角
-            var cityBoundary = new BMap.Boundary();
-            cityBoundary.get(App.city, function (rs){
-                 var ply = new BMap.Polygon(rs.boundaries[0]);
-
-                 App.map.setViewport(ply.getPath());
-            
-            });
+            App.map.centerAndZoom(App.city, 11);
             
         },
 
