@@ -354,6 +354,19 @@
                  App.trigger[curPartName]();
 
          });
+
+         $("#ordersInfoOper").click(function (){
+            var val = parseInt($(this).attr('value')),
+                infoPanel = $('#ordersInfo'),
+                w = infoPanel.width();
+
+            var self = this;
+            $('#ordersInfo').animate({left: val ? -w : 0}, function (){
+                $(self).html(val ? '展开' : '收起').attr('value', val ? '0' : '1');
+            
+            });
+         
+         });
      }
 
      App.initialize = function (){

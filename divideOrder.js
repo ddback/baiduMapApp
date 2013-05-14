@@ -67,7 +67,10 @@
     }
 
     function _getOrderTableHtml (order, status, member, index){
-        var orderHtml = "<tr style='background-color:" + (index % 2 ? "#A6C2DE" : "#fff")+ "'>"
+        var bgColor = index % 2 ? "#A6C2DE;" : "#fff;",
+            fColor = status === 1 ? "#ff0000;" : "#000";
+
+        var orderHtml = "<tr style='background-color:" + bgColor + "color:" + fColor + "'>"
             //+ "<td>" + order.order_id + "</td>"
             + "<td>" + order.address + "</td>"
             + "<td>" + order.restaurant + "</td>"
@@ -167,6 +170,7 @@
 
                     App.map.removeOverlay(marker);
 
+                    ordersHash[orderId]['status'] = 0;
                     ordersHash[orderId]['marker'] = App.helper.addMarker({
                         point: point,
                         infoHtml: _getOrderInfoHtml(order),
@@ -180,6 +184,7 @@
             }
 
             this.divideFormInfoWin.close();
+            this.updateOrdersList();
             App.map.removeOverlay(DivideOrder._rect);
         },
 
@@ -278,7 +283,7 @@
 
             tableHtml += "</table>";
 
-            document.getElementById('ordersInfo').innerHTML = tableHtml;
+            document.getElementById('ordersInfoTable').innerHTML = tableHtml;
         },
 
         removeAllMarkers: function (){
@@ -340,8 +345,9 @@
                    ordersHash[orderId]['status'] = 1;
                 }
             }
-        }
 
+            this.updateOrdersList();
+        }
     }
 
     window.DivideOrder = DivideOrder;
