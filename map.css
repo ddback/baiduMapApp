@@ -55,7 +55,7 @@ li {list-style: none;}
     height: 200px;
     margin: -100px 0 0 -200px;
     border-radius: 10px 0 0 0;
-    border: 10px solid rgba(182, 210, 236, 0.6);
+    border: 10px solid rgba(182, 210, 236, .6);
 }
 
 #hotCircle, #routeNavigation, #routeTrace, #selectMember, #ordersInfo {
@@ -66,13 +66,14 @@ li {list-style: none;}
     background: #fff;
     width: 500px;
     height: 200px;
-    border: 3px solid rgba(182, 210, 236, 0.6);
+    border-top: 8px solid rgba(182, 210, 236, .9);
+    border-right: 1px solid rgba(182, 210, 236, .6);
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
 
-#ordersInfo {height: 500px; width: 400px;}
+#ordersInfo {height: 100%; width: 400px;}
 #ordersInfo #ordersInfoTable {width: 100%;height: 100%;overflow: auto;}
 #ordersInfo #ordersInfoTable table {border-collapse: collapse; border: 1px solid #ccc;}
 #ordersInfo #ordersInfoTable table tr td{padding: 3px; border: 1px solid #ccc; font-size: 0.75em;}
@@ -81,7 +82,7 @@ li {list-style: none;}
     position: absolute;
     width: 20px;
     height: 80px;
-    padding: 30px 0 0 3px;
+    padding: 10px 0 0 3px;
     font-size: 0.75em;
     background: rgb(182, 210, 236);
     right: -20px;
@@ -91,6 +92,23 @@ li {list-style: none;}
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
+
+#divideOper {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #fff;
+    width: 300px;
+    height: 200px;
+    border: 1px solid rgba(182, 210, 236, .6);
+    padding: 10px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#divideOper #selectedOrdersNum {color: red; font-weight: bold;}
 
 .item {
     width: 100%;

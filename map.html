@@ -57,8 +57,14 @@
         <button id="memberSure">确定</button>
     </div>
     <div class="featurePanel" id="ordersInfo">
-        <span id="ordersInfoOper" value="1">收起</span>
+        <span id="ordersInfoOper" value="1">收起订单</span>
         <div id="ordersInfoTable"></div>
+    </div>
+    <div class="featurePanel" id="divideOper">
+        <p>将选中的<span id="selectedOrdersNum">0</span>个订单分给:</p>
+        <select id="divideMemberList"></select>
+        <button onclick="DivideOrder.submit();">确定</button>
+        <button onclick="DivideOrder.cancel();">取消</button>
     </div>
 </body>
 <script type="text/javascript" src="Data.js"></script>

@@ -17,35 +17,6 @@
             'selected': 'images/map-green-icon.png'
         };
 
-    function _getOrderInfoHtml(order){
-        if (!order)
-            return;
-
-        var infoHtml = "" 
-            + "<div><ul>"  
-            + "<li>编号：" + order.order_id + "</li>"           
-            + "<li>金额：" + order.amount + "</li>"           
-            + "<li>客户地址:" + order.address + "</li>"           
-            + "<li>客户电话:" + order.telephone + "</li>"           
-            + "<li>客户要求:" + order.remark + "</li>"           
-            + "<li>客户备注:" + order.calling_remark + "</li>"           
-
-            + "<li>餐厅地址:" + order.restaurant + "</li>"           
-            + "</ul></div>";
-
-        return infoHtml;
-    }
-    
-    
-    function _getDivideFormHtml (memberList){
-
-        var formHtml = "<p>将选中的订单分给:</p>"
-                    + "<select id='divideMemberList'>{$}</select>"
-                    + "<button onclick='DivideOrder.submit();'>确定</button>"
-                    + "<button onclick='DivideOrder.cancel();'>取消</button>"
-            options = '';
-
-
     var _rectPoints = [],
         _startPoint = {'x': 0, 'y': 0},
         _endPoint = {'x': 0, 'y': 0},
@@ -93,7 +64,7 @@
 
         for (var i = 0, l = memberList.length; i < l; i ++){
             var name = memberList[i].truename,
-
+                id = memberList[i].id;
 
             options += '<option value="' + id  + '">' + name + '</option>';
         }
@@ -118,7 +89,7 @@
             statContent, statOper;
 
             if (status === 2){
-                statContent = "以分";
+                statContent = "已分";
                 statOper = "<button onclick=\"DivideOrder.redivide('" + order.order_id + "');\">重分</button>";
             }else if (status === 1){
                 statContent = "已选择";
@@ -207,12 +178,13 @@
                     ordersHash[orderId]['member'] = selectedName;
                     
                     var marker = ordersHash[orderId]['marker'];
+
                     App.map.removeOverlay(marker);
                 }
             }
 
             this.updateOrdersList();
-            this.divideFormInfoWin.close();
+            //this.divideFormInfoWin.close();
             App.map.removeOverlay(DivideOrder._rect);
         },
 
@@ -230,7 +202,7 @@
                     App.map.removeOverlay(marker);
 
                     ordersHash[orderId]['status'] = 0;
-                    ordersHash[orderId]['marker'] = App.helper.addMarker({
+                    marker = App.helper.addMarker({
                         point: point,
                         infoHtml: _getOrderInfoHtml(order),
                         icon: {
@@ -242,7 +214,64 @@
                }
             }
 
-            this.divideFormInfoWin.close();
+            //this.divideFormInfoWin.close();
+            this.updateOrdersList();
+            App.map.removeOverlay(DivideOrder._rect);
+        },
+
+        cancelSelect: function (orderId){
+
+            if (!this.ordersHash[orderId]){
+                throw 'No order existed';
+                return;
+            }
+
+            this.ordersHash[orderId]['status'] = 0;
+
+            var marker = this.ordersHash[orderId]['marker'],
+                data = this.ordersHash[orderId]['data'],
+                point = new BMap.Point(data.lng2, data.lat2);
+
+            App.map.removeOverlay(marker);
+
+            marker = App.helper.addMarker({
+                 point: point,
+                 infoHtml: _getOrderInfoHtml(data),
+                 icon: {
+                     url: _orderImageUrl['unsigned'],
+                     width: _orderImageSize.width,
+                     height: _orderImageSize.height
+                 }
+            });
+
+            this.updateOrdersList();
+            App.map.removeOverlay(DivideOrder._rect);
+        },
+
+        joinSelect: function (orderId){
+            if (!this.ordersHash[orderId]){
+                throw 'No order existed';
+                return;
+            }
+
+            this.ordersHash[orderId]['status'] = 1;
+
+            var marker = this.ordersHash[orderId]['marker'],
+                data = this.ordersHash[orderId]['data'],
+                point = new BMap.Point(data.lng2, data.lat2);
+
+            App.map.removeOverlay(marker);
+
+            this.ordersHash[orderId]['marker'] = App.helper.addMarker({
+                 point: point,
+                 infoHtml: _getOrderInfoHtml(data),
+                 icon: {
+                     url: _orderImageUrl['selected'],
+                     width: _orderImageSize.width,
+                     height: _orderImageSize.height
+                 }
+            });
+
             this.updateOrdersList();
             App.map.removeOverlay(DivideOrder._rect);
         },
@@ -330,12 +359,16 @@
         updateOrdersList: function (){
             var ordersHash = this.ordersHash,
                 tableHtml = '<table><tr height=28><td width=100>客户地址</td><td width=100>餐厅地址</td><td>状态</td><td>送单员</td><td>操作</td></tr>',
-                index = 0;
+                index = 0,
+                selectedOrdersNum = 0;
 
             for (orderId in ordersHash){
                 var order = ordersHash[orderId]['data'],
                     status = ordersHash[orderId]['status'],
                     member = ordersHash[orderId]['member'];
+
+                if (status === 1)
+                    ++ selectedOrdersNum;
             
                 tableHtml += _getOrderTableHtml(order, status, member, ++ index);
             }
@@ -343,6 +376,7 @@
             tableHtml += "</table>";
 
             document.getElementById('ordersInfoTable').innerHTML = tableHtml;
+            document.getElementById('selectedOrdersNum').innerText = selectedOrdersNum;
         },
 
         removeAllMarkers: function (){

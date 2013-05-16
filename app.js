@@ -210,9 +210,11 @@
 
               for (var i = 0, l = results.length; i < l; i ++){
                   var name = results[i].truename,
-                      id = results[i].courier_id;
+                      id = results[i].courier_id,
+                      option = "<option value='" + id + "'>" + name + "</option>";
 
-                  $("<option value='" + id + "'>" + name + "</option>").appendTo("#memberList");
+                  $(option).appendTo("#memberList");
+                  $(option).appendTo("#divideMemberList");
               }
          });
      }
@@ -320,10 +322,11 @@
                      DivideOrder.setMemberList(results);
                      DivideOrder.drawOrdersMarker();
                      DivideOrder.drawMemberMarker();
+                     $('#ordersInfo').show();
+                     $('#divideOper').show();
                   });
              });
 
-             $('#ordersInfo').show();
          });
 
          $("#tool_track").click(function (){
@@ -360,7 +363,7 @@
 
             var self = this;
             $('#ordersInfo').animate({left: val ? -w : 0}, function (){
-                $(self).html(val ? '展开' : '收起').attr('value', val ? '0' : '1');
+                $(self).html(val ? '展开订单' : '收起订单').attr('value', val ? '0' : '1');
             
             });
          
