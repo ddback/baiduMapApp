@@ -45,9 +45,55 @@
                     + "<button onclick='DivideOrder.cancel();'>取消</button>"
             options = '';
 
+
+    var _rectPoints = [],
+        _startPoint = {'x': 0, 'y': 0},
+        _endPoint = {'x': 0, 'y': 0},
+        _dividingFlag = false,
+        _bounds;
+
+    var _orderImageSize = {
+            'width': 32,
+            'height': 32
+        },
+
+        _orderImageUrl = {
+            'signed': 'images/map-blue-icon.png',
+            'unsigned': 'images/map-red-icon.png',
+            'selected': 'images/map-green-icon.png'
+        };
+
+    function _getOrderInfoHtml(order){
+        if (!order)
+            return;
+
+        var infoHtml = "" 
+            + "<div><ul>"  
+            + "<li>编号：" + order.order_id + "</li>"           
+            + "<li>金额：" + order.amount + "</li>"           
+            + "<li>客户地址:" + order.address + "</li>"           
+            + "<li>客户电话:" + order.telephone + "</li>"           
+            + "<li>客户要求:" + order.remark + "</li>"           
+            + "<li>客户备注:" + order.calling_remark + "</li>"           
+
+            + "<li>餐厅地址:" + order.restaurant + "</li>"           
+            + "</ul></div>";
+
+        return infoHtml;
+    }
+    
+    
+    function _getDivideFormHtml (memberList){
+
+        var formHtml = "<p>将选中的订单分给:</p>"
+                    + "<select id='divideMemberList'>{$}</select>"
+                    + "<button onclick='DivideOrder.submit();'>确定</button>"
+                    + "<button onclick='DivideOrder.cancel();'>取消</button>"
+            options = '';
+
         for (var i = 0, l = memberList.length; i < l; i ++){
             var name = memberList[i].truename,
-                id = memberList[i].courier_id;
+
 
             options += '<option value="' + id  + '">' + name + '</option>';
         }
@@ -68,15 +114,28 @@
 
     function _getOrderTableHtml (order, status, member, index){
         var bgColor = index % 2 ? "#A6C2DE;" : "#fff;",
-            fColor = status === 1 ? "#ff0000;" : "#000";
+            fColor = status === 1 ? "#ff0000;" : "#000",
+            statContent, statOper;
+
+            if (status === 2){
+                statContent = "以分";
+                statOper = "<button onclick=\"DivideOrder.redivide('" + order.order_id + "');\">重分</button>";
+            }else if (status === 1){
+                statContent = "已选择";
+                statOper = "<button onclick=\"DivideOrder.cancelSelect('" + order.order_id + "');\">取消选择</button>";
+                
+            }else {
+                statContent = "未分";
+                statOper = "<button onclick=\"DivideOrder.joinSelect('" + order.order_id + "');\">选择</button>";
+            }
 
         var orderHtml = "<tr style='background-color:" + bgColor + "color:" + fColor + "'>"
             //+ "<td>" + order.order_id + "</td>"
             + "<td>" + order.address + "</td>"
             + "<td>" + order.restaurant + "</td>"
-            + "<td>" + (status === 2 ? "已分" : "未分") + "</td>"
+            + "<td>" + statContent + "</td>"
             + "<td>" + (member || '') + "</td>"
-            + "<td>" + (status === 2 ? "<button onclick=\"DivideOrder.redivide('" + order.order_id + "');\">重分</button>" : "") + "</td>";
+            + "<td>" + statOper + "</td>";
         
         return orderHtml;
     }

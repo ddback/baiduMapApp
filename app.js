@@ -165,7 +165,7 @@
              App.map.removeOverlay(DivideOrder.rect);
              DivideOrder.rect = null;
              DivideOrder.setBounds(DivideOrder._rect.getBounds());
-             DivideOrder.showDivideForm(x, y);
+             //DivideOrder.showDivideForm(x, y);
              DivideOrder.setOrdersInBounds();
              //DivideOrder.setDividingFlag(false);
              App.map.addOverlay(DivideOrder._rect);
@@ -201,8 +201,6 @@
      function _getPolygon (points){
          return new BMap.Polygon(instancePointsArr(points), {strokeColor: "red", strokeWeight: 3, strokeOpacity: 0.5});
      }
-
-     
 
      function _fillMemberList(){
 
@@ -380,3 +378,4 @@
      App.initialize();
      window.App = App;
 })();
+
