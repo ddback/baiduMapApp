@@ -11,9 +11,13 @@ def copy_to(paths, to_path):
 
     for path in paths:
         filename = os.path.basename(path)
-        shutil.copy(path, os.path.join(to_path, filename))
 
-def get_special_paths(dir, unInclude_list):
+        if os.path.isdir(path):
+            shutil.copytree(path, os.path.join(to_path, filename))
+        else:
+            shutil.copy(path, os.path.join(to_path, filename))
+
+def get_special_paths(dir, unInclude_list = []):
     filenames = os.listdir(dir)
     paths = []
 
@@ -35,7 +39,7 @@ def main():
         if not os.path.exists(deploy_path):
             os.makedirs(deploy_path)
 
-        unInclude_list = ['MapApi', 'README.md', '.git', 'images', __file__]
+        unInclude_list = ['MapApi', 'README.md', '.git', '.gitignore', __file__]
         paths = get_special_paths('./', unInclude_list)
         copy_to(paths, deploy_path)
 
