@@ -1,32 +1,5 @@
 (function (){
 
-    var _baseURL = "/district/";
-
-    /*
-    * 
-    * district data:
-    *  [{
-    *    id: 1,
-    *    name: '小店区'
-    *  }, 
-    *  {
-    *    id: 2,
-    *    name: '尖草坪区'
-    *  }]
-    *
-    * */
-
-    var DistrictData = [{id: 1, name: '小店区'}, 
-                        {id: 2, name: '尖草坪区'},
-                        {id: 3, name: '杏花岭区'},
-                        {id: 4, name: '万柏林区'},
-                        {id: 5, name: '迎泽区'},
-                        {id: 6, name: '晋源区'},
-                        {id: 7, name: '清徐县'},
-                        {id: 8, name: '阳曲县'},
-                        {id: 9, name: '娄烦县'},
-                        {id: 10, name: '古交县'}];
-
     var _districtNameStyle = {
         'width': 'auto',
         'height': '20px',
@@ -41,13 +14,15 @@
          var bdary = new BMap.Boundary(),
              districtName = district.region_name,
              districtId = district.region_id;
+             orderNum = district.orderNum || 0;
 
          bdary.get(districtName, function(rs){   
              var count = rs.boundaries.length;
 
-             for(var i = 0; i < count; i++){
+             for (var i = 0; i < count; i++){
                  var ply = new BMap.Polygon(rs.boundaries[i], {fillColor: '#d3e4f3', strokeWeight: 2, strokeColor: "#2A55FF"}),
-                     label = new BMap.Label(districtName);
+                     labelContent = districtName + '(' + orderNum + ')',
+                     label = new BMap.Label(labelContent);
                 
                  label.setStyle(_districtNameStyle);
                  label.setPosition(ply.getBounds().getCenter());
@@ -87,6 +62,43 @@
             this.districtData = data;
         },
 
+        select: function (region_id){
+            //正式上线后，需要使用id作为参数请求订单数据
+            //App.helper.getDataList('GetOrderData&region_id1=' + region_id, function (orderList){
+            App.helper.getDataList('GetOrderData', function (orderList){
+                if (!orderList)
+                    return;
+
+                DivideOrder.removeAllMarkers();
+                DivideOrder.setOrders(orderList);
+                DivideOrder.drawOrdersMarker();
+            });
+        },
+
+        updateDistrictList: function (){
+            var districtData = this.getDistrictData(),
+                len = districtData.length,
+                listHtml = '<table><tr style="background: #557FFF;">'
+                    + '<td width=80>序号</td>'
+                    + '<td width=120>名称</td>'
+                    + '<td width=80>订单数</td>'
+                    + '</tr>';
+
+            for (var i = 0; i < len; i ++){
+                var data = districtData[i];
+
+                listHtml += '<tr onclick="District.select(\'' + data.region_id + '\');">'
+                    + '<td>' + data.region_id + '</td>'
+                    + '<td>' + data.region_name + '</td>'
+                    + '<td>' + (data.orderNum || 0) + '</td>'
+                    + '</tr>'
+            }
+
+            listHtml += '</table>'
+
+            document.getElementById('districtList').innerHTML = listHtml;
+        },
+
         drawBoundary: function (data){
             if (!data)
                 data = this.getDistrictData();
@@ -95,21 +107,16 @@
                 var district = data[i];
 
                 _setBoundary(district, function (id){
-                    //App.helper.getDataList('GetOrderData&region_id1=' + id, function (orderList){
-                    App.helper.getDataList('GetOrderData', function (orderList){
-                        if (!orderList)
-                            return;
-
-                        DivideOrder.removeAllMarkers();
-                        DivideOrder.setOrders(orderList);
-                        DivideOrder.drawOrdersMarker();
-                    });
+                    App.map.clearOverlays();
+                    App.toogleDivideOrder();
+                    DivideOrder.setDividingFlag(true);
+                    DivideOrder.enterDivide(id);
                 });
             }
 
             //调整视角
             App.map.centerAndZoom(App.city, 11);
-            
+            this.updateDistrictList();
         },
 
         bindEvent: function (){

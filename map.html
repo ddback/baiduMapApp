@@ -32,27 +32,25 @@
         <div class="item"><button id="circle_add">添加商圈</button></div>
         <div class="hideHandler">关闭</div>
     </div>
-    <div class="featurePanel" id="routeNavigation">
-        <!--
-        <div class="item">
-            <label>起点</label>
-            <input id="route_start"type="text" />
-            <button id="search_route_start">搜索</button>
-        </div>
-        <div class="item">
-            <label>终点</label>
-            <input id="route_end" type="text" />
-            <button id="search_route_end">搜索</button>
-        </div>
-        <div class="item">
-            <label>加入途径点</label>
-            <input type="text" />
-            <button>确定</button>
-        </div>
-        <div class="hideHandler">关闭</div>
-        -->
+    <div class="featurePanel" id="districtList">
     </div>
     <div class="featurePanel" id="selectMember">
+        <div id="playPanel">
+            <label>播放速度:</label>
+            <ul>
+            	<li class="curr" speed="low">慢</li>
+            	<li speed="mid">中</li>
+            	<li speed="fast">快</li>
+            </ul>
+            <label>预计完成:</label>
+            <span id="miles">0</span>
+            <span>米</span>
+            <div class="clearfix"></div>
+            <label>预计时间:</label>
+            <span id="minute">0</span>
+            <span>分钟</span>
+        </div>
+        <div class="clearfix"></div>
         <select id="memberList" name=""></select>
         <button id="memberSure">确定</button>
     </div>

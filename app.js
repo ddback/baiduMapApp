@@ -9,6 +9,12 @@
         member: '' //submit member;
      };
 
+     App.speedHash = {
+        low: 1000,
+        mid: 800,
+        fast: 200
+     };
+
      //set map attribute
      App.container = document.getElementById('container');
      App.map = new BMap.Map('container');
@@ -277,10 +283,16 @@
 
             track: function (){
                 App.helper.getDataList('CourierTrace', function (traceData){
+                    var speed = $('#playPanel').find('li.curr').attr('speed');
                     PathReplay.setReplayPath(traceData);
-                    PathReplay.replay();
+                    PathReplay.replay(App.speedHash[speed]);
                 });            
             }
+         }
+
+         App.toogleDivideOrder = function (){
+            $('#toolMenu li').removeClass('cur');
+            $('#tool_order').addClass('cur');
          }
 
          $("#toolMenu li").each(function (index, item){
@@ -295,9 +307,7 @@
                 var name = $(this).attr('id').split('_')[1];
 
                 App.curPart.name = name;
-
                 DivideOrder.setDividingFlag(name === 'order' ? true : false);
-
              });
          });
 
@@ -305,32 +315,26 @@
              App.helper.getDataList('GetDistrictData', function (districtData){
                  District.setDistrictData(districtData);
                  District.drawBoundary();
+
+                 $('#districtList').show();
              });
          });
 
          $("#tool_routeNav").click(function (){
-
              var tracePanel = $("#selectMember");
+
+             tracePanel.find('#playPanel').hide();
              tracePanel.toggle();
          });
 
          $("#tool_order").click(function (){
-             App.helper.getDataList('GetOrderData', function (orderList){
-                  DivideOrder.setOrders(orderList);
-
-                  App.helper.getDataList('GetCourierData', function (results){
-                     DivideOrder.setMemberList(results);
-                     DivideOrder.drawOrdersMarker();
-                     DivideOrder.drawMemberMarker();
-                     $('#ordersInfo').show();
-                     $('#divideOper').show();
-                  });
-             });
-
+             DivideOrder.enterDivide(region_id);
          });
 
          $("#tool_track").click(function (){
              var tracePanel = $("#selectMember");
+
+             tracePanel.find('#playPanel').show();
              tracePanel.toggle();
          });
          
@@ -367,6 +371,15 @@
             
             });
          
+         });
+
+         $("#playPanel li").each(function (index, item){
+             $(item).click(function (){
+                 var speed = $(this).attr('speed');
+
+                 $(this).parent().find('li').removeClass('curr');
+                 $(this).addClass('curr');
+             });
          });
      }
 

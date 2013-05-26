@@ -56,6 +56,7 @@
                 len = points.length,
                 routePlans = [],
                 routePaths = [],
+                miles = 0, minute = 0,
                 planNum = 0;
 
             if (!len)
@@ -79,8 +80,14 @@
                                         path = route.getPath();
 
                                     routePaths = routePaths.concat(path);    
-                                    PathReplay.draw(routePaths, T);
+                                    miles += routePlans[j].getDistance(false);
+                                    minute += routePlans[j].getDuration(false);
                                 }
+
+
+                                PathReplay.draw(routePaths, T);
+                                document.getElementById('miles').innerText = miles;
+                                document.getElementById('minute').innerText = (minute / 60).toFixed(0);
                             }
                         
                         }

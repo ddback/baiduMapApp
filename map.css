@@ -8,6 +8,13 @@ body, html, ul, li{
 
 li {list-style: none;}
 
+.clearfix {
+    visibility: hidden;
+    clear: both;
+    width: 0;
+    height: 0;
+}
+
 #toolMenu {
     position: absolute;
     left: 50%;
@@ -58,7 +65,7 @@ li {list-style: none;}
     border: 10px solid rgba(182, 210, 236, .6);
 }
 
-#hotCircle, #routeNavigation, #routeTrace, #selectMember, #ordersInfo {
+#hotCircle, #districtList, #routeTrace, #selectMember, #ordersInfo {
     display: none;
     position: absolute;
     bottom: 0;
@@ -71,6 +78,72 @@ li {list-style: none;}
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+}
+
+#districtList {
+    border-top-width: 1px;
+    width: 300px;
+}
+
+#districtList table {
+    text-align: center;
+    border-collapse: collapse; 
+    width: 100%;
+    font-size: 12px;
+}
+
+#districtList table tr:hover {
+    background: #BCD5EC;
+    color: #fff;
+    cursor: pointer;
+}
+
+#districtList table tr td{padding: 5px; border: 1px solid #ccc;}
+
+#selectMember {
+    border-top-width: 1px;
+    padding: 10px 0 0 3px;
+}
+
+#selectMember #playPanel {
+    display: none;
+    margin: 10px 0;
+    height: 25px;
+    line-height: 25px;
+}
+
+#selectMember #playPanel label{
+    float: left;
+    font-size: 14px;
+    margin-right: 10px;
+    width: 80px;
+    text-align: right;
+}
+
+#selectMember #playPanel ul{
+    display: table-cell;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-left: 10px;
+    border: 1px solid #000;
+}
+
+#selectMember #playPanel li{
+    float: left;
+    width: 40px;
+    text-align: center;
+    font-size: 12px;
+    background: #557FFF;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, .3) inset;
+}
+
+
+#selectMember #playPanel li.curr,
+#selectMember #playPanel li:hover {
+    background: rgba(0, 0, 0, .3);
+    color: #000;
+    box-shadow: 0 0 2px #000 inset;
 }
 
 #ordersInfo {height: 100%; width: 400px;}
@@ -142,3 +215,5 @@ li {list-style: none;}
     background: #d3e4f3;
     cursor: pointer;
 }
+
+

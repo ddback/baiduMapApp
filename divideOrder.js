@@ -146,6 +146,23 @@
             return _rectPoints;
         },
 
+        enterDivide: function (region_id){
+            //App.helper.getDataList('GetOrderData&region_id1=' + region_id, function (orderList){
+            App.helper.getDataList('GetOrderData', function (orderList){
+                 if (!orderList)
+                    return;
+
+                 DivideOrder.setOrders(orderList);
+
+                 App.helper.getDataList('GetCourierData', function (results){
+                    DivideOrder.setMemberList(results);
+                    DivideOrder.drawOrdersMarker(true);
+                    DivideOrder.drawMemberMarker();
+                    $('#ordersInfo').show();
+                 });
+            });           
+        },
+
         redivide: function (orderId){
             var orders = this.orders;
 
@@ -160,7 +177,7 @@
                 }
             }
             
-            this.drawOrdersMarker();
+            this.drawOrdersMarker(false);
         },
 
         submit: function (){
@@ -184,6 +201,7 @@
             }
 
             this.updateOrdersList();
+            App.map.removeOverlay(DivideOrder._rect);
             //this.divideFormInfoWin.close();
             App.map.removeOverlay(DivideOrder._rect);
         },
@@ -197,7 +215,7 @@
                 if (status === 1){
                     var marker = ordersHash[orderId]['marker'],
                         order = ordersHash[orderId]['data'],
-                        point = new BMap.Point(order.lng2, order.lat2);
+                        point = new BMap.Point(order.lng1, order.lat1);
 
                     App.map.removeOverlay(marker);
 
@@ -230,7 +248,7 @@
 
             var marker = this.ordersHash[orderId]['marker'],
                 data = this.ordersHash[orderId]['data'],
-                point = new BMap.Point(data.lng2, data.lat2);
+                point = new BMap.Point(data.lng1, data.lat1);
 
             App.map.removeOverlay(marker);
 
@@ -258,7 +276,7 @@
 
             var marker = this.ordersHash[orderId]['marker'],
                 data = this.ordersHash[orderId]['data'],
-                point = new BMap.Point(data.lng2, data.lat2);
+                point = new BMap.Point(data.lng1, data.lat1);
 
             App.map.removeOverlay(marker);
 
@@ -318,7 +336,7 @@
                           
         },
 
-        drawOrdersMarker: function (){
+        drawOrdersMarker: function (needViewport){
             var ordersHash = this.ordersHash,
                 viewPath = [];
 
@@ -326,8 +344,8 @@
                 var order = ordersHash[orderId]['data'],
                     marker = ordersHash[orderId]['marker'],
                     status = ordersHash[orderId]['status'],
-                    lng = order.lng2, //get custiomPosition
-                    lat = order.lat2,
+                    lng = order.lng1, //get custiomPosition
+                    lat = order.lat1,
                     sign = order.sign;
 
                 if (status === 2)
@@ -353,10 +371,11 @@
             }
 
             this.updateOrdersList();
-            App.map.setViewport(viewPath);
+            if (needViewport)
+                App.map.setViewport(viewPath);
         },
 
-        updateOrdersList: function (){
+        updateOrdersList: function (flag){
             var ordersHash = this.ordersHash,
                 tableHtml = '<table><tr height=28><td width=100>客户地址</td><td width=100>餐厅地址</td><td>状态</td><td>送单员</td><td>操作</td></tr>',
                 index = 0,
@@ -376,6 +395,7 @@
             tableHtml += "</table>";
 
             document.getElementById('ordersInfoTable').innerHTML = tableHtml;
+            document.getElementById('divideOper').style.display = flag ? 'block' : 'none';
             document.getElementById('selectedOrdersNum').innerText = selectedOrdersNum;
         },
 
@@ -417,7 +437,7 @@
                     return;
 
                 var order = ordersHash[orderId]['data'],
-                    point = new BMap.Point(order.lng2, order.lat2),
+                    point = new BMap.Point(order.lng1, order.lat1),
                     marker = ordersHash[orderId]['marker'],
                     status = ordersHash[orderId]['status'];
 
@@ -439,7 +459,7 @@
                 }
             }
 
-            this.updateOrdersList();
+            this.updateOrdersList(1);
         }
     }
 
