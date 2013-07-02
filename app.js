@@ -278,6 +278,7 @@
                 App.helper.getDataList('GetNavigation', function (navData){
                     RouteNav.setRoutePoints(navData.points_pair);
                     RouteNav.drawRoute();
+                    RouteNav.drawRoutePoint();
                 });
             },
 
