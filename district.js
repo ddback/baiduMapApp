@@ -111,6 +111,7 @@
                     App.toogleDivideOrder();
                     DivideOrder.setDividingFlag(true);
                     DivideOrder.enterDivide(id);
+                    document.getElementById('districtList').style.display = "none";
                 });
             }
 

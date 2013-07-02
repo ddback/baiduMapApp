@@ -329,7 +329,7 @@
          });
 
          $("#tool_order").click(function (){
-             DivideOrder.enterDivide(region_id);
+             DivideOrder.enterDivide();
          });
 
          $("#tool_track").click(function (){
